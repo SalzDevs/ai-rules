@@ -1,0 +1,37 @@
+{
+  "name": "ai-rules",
+  "version": "0.1.0",
+  "description": "Local-first, tool-agnostic AI coding instruction selector and wrapper.",
+  "type": "module",
+  "bin": {
+    "ai-rules": "./dist/bin/ai-rules.js",
+    "smart-codex": "./dist/bin/smart-codex.js",
+    "smart-claude": "./dist/bin/smart-claude.js",
+    "smart-opencode": "./dist/bin/smart-opencode.js",
+    "smart-pi": "./dist/bin/smart-pi.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "coding-agent",
+    "rules",
+    "prompt"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "minimatch": "^10.0.3",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.4",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
