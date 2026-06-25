@@ -1,5 +1,6 @@
 import { ensureDir } from "./preflight.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
+import { installOpenCodeCommand, type OpenCodeInstallScope } from "./opencode.js";
 import { promoteRule } from "./promote.js";
 import { closePrompts, readStdinIfAvailable } from "./prompt.js";
 import { prepareTask } from "./run.js";
@@ -12,7 +13,7 @@ interface ParsedArgs {
   flags: Map<string, string | boolean>;
 }
 
-const booleanFlags = new Set(["repo", "personal", "draft-prompt"]);
+const booleanFlags = new Set(["repo", "personal", "global", "force", "draft-prompt", "no-resolve-conflicts"]);
 
 export async function runAiRulesCli(argv: string[], cwd = process.cwd()): Promise<number> {
   const parsed = parseArgs(argv);
@@ -21,7 +22,7 @@ export async function runAiRulesCli(argv: string[], cwd = process.cwd()): Promis
     switch (parsed.command) {
       case "compile": {
         const task = await readTask(parsed.positional);
-        const prepared = await prepareTask(task, cwd, readBudget(parsed), true);
+        const prepared = await prepareTask(task, cwd, readBudget(parsed), !parsed.flags.has("no-resolve-conflicts"));
         console.log(prepared.pack.text);
         return 0;
       }
@@ -45,6 +46,21 @@ export async function runAiRulesCli(argv: string[], cwd = process.cwd()): Promis
         await ensureDir(rulesSubdir(defaultPersonalRulesDir()));
         await ensureDir(rulesSubdir(repoRulesDir(cwd)));
         console.log(`Initialized ${rulesSubdir(repoRulesDir(cwd))}`);
+        return 0;
+      }
+      case "install": {
+        if (parsed.positional[0] !== "opencode") {
+          throw new Error("Only `ai-rules install opencode` is supported.");
+        }
+
+        const commandPath = await installOpenCodeCommand({
+          cwd,
+          scope: readOpenCodeInstallScope(parsed),
+          commandName: readStringFlag(parsed, "name", "airules"),
+          budget: readBudget(parsed),
+          force: Boolean(parsed.flags.get("force")),
+        });
+        console.log(`Installed OpenCode command: ${commandPath}`);
         return 0;
       }
       case "help":
@@ -142,6 +158,8 @@ Commands:
   ai-rules promote [--repo|--personal]     Promote a review comment into a rule
   ai-rules promote --draft-prompt "comment" Print an AI drafting prompt
   ai-rules init                            Create personal and repo rule folders
+  ai-rules install opencode [--repo|--global] [--name airules] [--force]
+                                             Install native OpenCode /airules command
 
 Wrappers:
   smart-codex "task"
@@ -149,4 +167,13 @@ Wrappers:
   smart-opencode "task"
   smart-pi "task"
 `);
+}
+
+function readOpenCodeInstallScope(parsed: ParsedArgs): OpenCodeInstallScope {
+  return parsed.flags.has("global") ? "global" : "repo";
+}
+
+function readStringFlag(parsed: ParsedArgs, name: string, fallback: string): string {
+  const value = parsed.flags.get(name);
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }

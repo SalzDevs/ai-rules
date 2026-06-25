@@ -9,6 +9,7 @@ ai-rules init
 ai-rules compile "Implement data loading in src/components/UserCard.tsx"
 ai-rules select "Implement data loading in src/components/UserCard.tsx"
 ai-rules promote
+ai-rules install opencode
 ```
 
 ## Wrappers
@@ -21,6 +22,22 @@ smart-pi "task"
 ```
 
 Use `--dry-run` on wrappers to inspect the exact prompt before launching the underlying tool.
+
+## Native OpenCode Command
+
+Install the project-local OpenCode slash command:
+
+```sh
+ai-rules install opencode
+```
+
+This creates `.opencode/commands/airules.md`. In OpenCode, run:
+
+```sh
+/airules Implement data loading in src/components/UserCard.tsx
+```
+
+OpenCode will inject the compact `ai-rules` contract for that task using its native shell-output command template. Use `--global` to install the command into `~/.config/opencode/commands/` instead.
 
 ## Rule Locations
 

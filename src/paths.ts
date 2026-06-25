@@ -8,6 +8,11 @@ export function defaultPersonalRulesDir(): string {
   return path.join(xdgConfig && xdgConfig.length > 0 ? xdgConfig : path.join(os.homedir(), ".config"), "ai-rules");
 }
 
+export function defaultOpenCodeConfigDir(): string {
+  const xdgConfig = process.env.XDG_CONFIG_HOME;
+  return path.join(xdgConfig && xdgConfig.length > 0 ? xdgConfig : path.join(os.homedir(), ".config"), "opencode");
+}
+
 export function repoRulesDir(cwd: string): string {
   return path.join(cwd, repoRulesDirName);
 }

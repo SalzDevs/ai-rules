@@ -57,6 +57,15 @@ function renderRulePack(pack: Omit<CompiledRulePack, "text"> & { text: string })
     lines.push(...pack.instructions.map((instruction) => `- ${instruction}`), "");
   }
 
+  if (pack.conflicts.length > 0) {
+    lines.push(
+      "### Selected Rule Conflicts",
+      "- Stop before editing code and ask the user which rule should apply.",
+      ...pack.conflicts.map((conflict) => `- ${conflict.ruleIds.join(" vs ")}: ${conflict.reason}`),
+      "",
+    );
+  }
+
   if (pack.examples.length > 0) {
     lines.push("### Examples");
     for (const example of pack.examples) {
