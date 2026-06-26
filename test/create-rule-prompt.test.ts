@@ -9,7 +9,10 @@ test("renderCreateRulePrompt includes interview flow and personal save path", ()
 
   assert.match(prompt, /create a personal rule/);
   assert.match(prompt, /Ask \*\*one question at a time\*\*/);
-  assert.match(prompt, /What should the agent avoid or always do/);
+  assert.match(prompt, /numbered option list/);
+  assert.match(prompt, /Other \(type your own\)/);
+  assert.match(prompt, /### 9\. Severity \(MCQ\)/);
+  assert.match(prompt, /1\. Save/);
   assert.match(prompt, /layer: personal/);
   assert.match(prompt, /Write the finished rule to:/);
   assert.match(prompt, /Seed from user/);
