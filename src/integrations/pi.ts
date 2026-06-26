@@ -11,11 +11,101 @@ export function renderPiExtension(options: { aiRulesCommand: string; budget: num
   const createRulePrompt = renderCreateRulePrompt();
 
   return `import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { Type } from "@sinclair/typebox";
 
 const COMPILE_SHELL = ${JSON.stringify(compileShell)};
 const CREATE_RULE_PROMPT = ${JSON.stringify(createRulePrompt)};
 
 export default function (pi: ExtensionAPI) {
+  pi.registerTool({
+    name: "question",
+    label: "Question",
+    description:
+      "Ask the user a question with selectable options. Use for every /create-rule MCQ step (one question per call).",
+    parameters: Type.Object({
+      questions: Type.Array(
+        Type.Object({
+          header: Type.String({ description: "Very short label (max 30 chars)" }),
+          question: Type.String({ description: "Complete question text" }),
+          options: Type.Array(
+            Type.Object({
+              label: Type.String({ description: "Display text (concise)" }),
+              description: Type.Optional(Type.String({ description: "Optional explanation" })),
+            }),
+          ),
+          multiple: Type.Optional(Type.Boolean({ description: "Allow multiple selections" })),
+        }),
+        { minItems: 1, maxItems: 1, description: "Ask exactly one question per call" },
+      ),
+    }),
+    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+      if (!ctx.hasUI) {
+        return {
+          content: [{ type: "text", text: "Error: question tool requires interactive UI" }],
+          details: { answers: [] },
+        };
+      }
+
+      const q = params.questions[0];
+      const labels = q.options.map((o) => o.label);
+      if (!labels.some((l) => /other/i.test(l))) {
+        labels.push("Other (type your own)");
+      }
+
+      const prompt = q.header ? \`\${q.header}: \${q.question}\` : q.question;
+
+      if (q.multiple) {
+        const picked: string[] = [];
+        let done = false;
+        while (!done) {
+          const remaining = labels.filter((l) => !picked.includes(l));
+          const choice = await ctx.ui.select(
+            picked.length ? \`\${prompt}\\nSelected: \${picked.join(", ")}\` : prompt,
+            [...remaining, "Done selecting"],
+          );
+          if (!choice || choice === "Done selecting") {
+            done = true;
+          } else if (/other/i.test(choice)) {
+            const custom = await ctx.ui.input("Your answer (comma-separated for multiple):", "");
+            if (custom?.trim()) {
+              picked.push(...custom.split(",").map((s) => s.trim()).filter(Boolean));
+            }
+            done = true;
+          } else {
+            picked.push(choice);
+          }
+        }
+        const answer = picked.length ? picked : ["Unanswered"];
+        return {
+          content: [{ type: "text", text: \`User selected: \${answer.join(", ")}\` }],
+          details: { answers: [answer] },
+        };
+      }
+
+      const choice = await ctx.ui.select(prompt, labels);
+      if (!choice) {
+        return {
+          content: [{ type: "text", text: "User cancelled the question" }],
+          details: { answers: [[]] },
+        };
+      }
+
+      if (/other/i.test(choice)) {
+        const custom = await ctx.ui.input("Your answer:", "");
+        const answer = custom?.trim() ? [custom.trim()] : ["Unanswered"];
+        return {
+          content: [{ type: "text", text: \`User wrote: \${answer[0]}\` }],
+          details: { answers: [answer] },
+        };
+      }
+
+      return {
+        content: [{ type: "text", text: \`User selected: \${choice}\` }],
+        details: { answers: [[choice]] },
+      };
+    },
+  });
+
   pi.registerCommand("airules", {
     description: "Run a task with ai-rules selected coding instructions",
     handler: async (args, ctx) => {

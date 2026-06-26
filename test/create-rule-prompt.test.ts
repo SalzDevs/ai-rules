@@ -9,10 +9,13 @@ test("renderCreateRulePrompt includes interview flow and personal save path", ()
 
   assert.match(prompt, /create a personal rule/);
   assert.match(prompt, /Ask \*\*one question at a time\*\*/);
-  assert.match(prompt, /numbered option list/);
+  assert.match(prompt, /Every interview step is MCQ/);
+  assert.match(prompt, /question` tool/);
+  assert.match(prompt, /### 1\. Rule intent \(MCQ\)/);
+  assert.match(prompt, /### 8\. Trigger keywords \(MCQ\)/);
   assert.match(prompt, /Other \(type your own\)/);
   assert.match(prompt, /### 9\. Severity \(MCQ\)/);
-  assert.match(prompt, /1\. Save/);
+  assert.match(prompt, /Use the `question` tool: Save/);
   assert.match(prompt, /layer: personal/);
   assert.match(prompt, /Write the finished rule to:/);
   assert.match(prompt, /Seed from user/);
@@ -31,6 +34,8 @@ test("Pi extension registers create-rule command", () => {
   const extension = renderPiExtension({ aiRulesCommand: "ai-rules", budget: 800 });
 
   assert.match(extension, /pi\.registerCommand\("create-rule"/);
+  assert.match(extension, /pi\.registerTool\(\{/);
+  assert.match(extension, /name: "question"/);
   assert.match(extension, /Interview and create a personal ai-rules rule/);
   assert.match(extension, /CREATE_RULE_PROMPT/);
 });
