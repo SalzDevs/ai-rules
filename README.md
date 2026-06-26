@@ -17,55 +17,14 @@ Define standards once → select what fits each task → run the agent under a c
 
 <br />
 
-<video src="docs/demo.mp4" controls width="100%" poster="docs/demo-poster.png"></video>
-
-*Demo video from [`demo-video/`](demo-video/) — real OpenCode `/create-rule` session + live `/airules` compile. Regenerate: `npm run video`*
-
-<br />
-
-<details>
-<summary><strong>Full terminal transcript</strong></summary>
-
-```text
-$ opencode
-
-> /create-rule no fetch directly inside React components
-
-agent> Let's create your rule. Seed detected: **"no fetch directly inside React components"**.
-
-**Question 1:** What should the agent avoid or always do?
-you> avoit calling fetch directly in React components
-agent> **Question 2:** What should the agent do instead?
-you> use a custom hook
-agent> **Question 3:** When does this rule apply?
-you> when writting an ai component that needs data from an api
-…
-agent> **Question 10:** Suggested rule id: `react.no-direct-fetch`. Works?
-you> sounds nice
-agent> Preview ready. Save, Edit, or Cancel?
-you> save
-agent> Saved to `~/.config/ai-rules/rules/react.no-direct-fetch.md`.
-
-> /airules Add UserCard data loading
-
-## AI Rules Contract
-
-### Selected Rules
-- react.no-direct-fetch
-
-### Mandatory Instructions
-- [react.no-direct-fetch] Do not call `fetch` directly inside React components.
-  Extract data fetching into custom hooks.
-
-## User Task
-Add UserCard data loading
+```bash
+/create-rule no fetch in React components
+/airules Add UserCard data loading
 ```
 
-Full transcript: [`docs/demo-transcript.txt`](docs/demo-transcript.txt)
-
-</details>
-
 <br />
+
+---
 
 ## Quickstart
 
@@ -275,15 +234,7 @@ cd ai-rules
 npm install
 npm test
 npm run build
-npm run demo   # rebuild docs/demo-transcript.txt from OpenCode export + live CLI
 npm pack
-```
-
-To re-record the README demo after a new OpenCode session:
-
-```bash
-opencode export <session-id> > docs/demo-project/create-rule-session.json
-npm run demo
 ```
 
 </details>

@@ -19,9 +19,6 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run build",
     "test": "node --import tsx --test test/*.test.ts",
-    "demo": "npm run build && node scripts/record-demo.mjs",
-    "video": "npm run demo && npm run render --prefix demo-video",
-    "video:studio": "npm run --prefix demo-video studio",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "repository": {

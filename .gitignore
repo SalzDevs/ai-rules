@@ -4,5 +4,3 @@ dist/
 .DS_Store
 airules-opencode-test/
 *.tgz
-docs/demo-project/
-demo-video/node_modules/
