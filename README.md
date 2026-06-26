@@ -17,14 +17,53 @@ Define standards once → select what fits each task → run the agent under a c
 
 <br />
 
-```bash
-/create-rule no fetch in React components   # you write the rule (once)
-/airules Add UserCard data loading           # agent runs under it (every task)
-```
+<video src="docs/demo.mp4" controls width="100%" poster="docs/demo-poster.png"></video>
+
+*Demo video from [`demo-video/`](demo-video/) — real OpenCode `/create-rule` session + live `/airules` compile. Regenerate: `npm run video`*
 
 <br />
 
----
+<details>
+<summary><strong>Full terminal transcript</strong></summary>
+
+```text
+$ opencode
+
+> /create-rule no fetch directly inside React components
+
+agent> Let's create your rule. Seed detected: **"no fetch directly inside React components"**.
+
+**Question 1:** What should the agent avoid or always do?
+you> avoit calling fetch directly in React components
+agent> **Question 2:** What should the agent do instead?
+you> use a custom hook
+agent> **Question 3:** When does this rule apply?
+you> when writting an ai component that needs data from an api
+…
+agent> **Question 10:** Suggested rule id: `react.no-direct-fetch`. Works?
+you> sounds nice
+agent> Preview ready. Save, Edit, or Cancel?
+you> save
+agent> Saved to `~/.config/ai-rules/rules/react.no-direct-fetch.md`.
+
+> /airules Add UserCard data loading
+
+## AI Rules Contract
+
+### Selected Rules
+- react.no-direct-fetch
+
+### Mandatory Instructions
+- [react.no-direct-fetch] Do not call `fetch` directly inside React components.
+  Extract data fetching into custom hooks.
+
+## User Task
+Add UserCard data loading
+```
+
+Full transcript: [`docs/demo-transcript.txt`](docs/demo-transcript.txt)
+
+</details>
 
 <br />
 
@@ -47,28 +86,6 @@ From the terminal:
 ai-rules run "Implement data loading in src/components/UserCard.tsx"
 ai-rules doctor
 ```
-
-<details>
-<summary><strong>Expected output after <code>setup</code></strong></summary>
-
-```text
-ai-rules is ready.
-
-Rule folder:
-- personal: ~/.config/ai-rules/rules
-
-Detected tools: pi, opencode
-
-Integrations:
-- Pi /airules and /create-rule extension -> .pi/extensions/ai-rules.ts
-- OpenCode /airules and /create-rule commands -> .opencode/commands/airules.md
-
-Next steps:
-1. In Pi or OpenCode: /create-rule
-2. ai-rules run "your coding task"
-```
-
-</details>
 
 <details>
 <summary><strong>Install globally</strong></summary>
@@ -107,28 +124,30 @@ ai-rules setup --force      # overwrite existing integration files
 Your rules live in `~/.config/ai-rules/rules/`. They stay **outside** the model context until a task needs them.
 
 <details>
-<summary><strong>See selection and compilation</strong></summary>
-
-```bash
-ai-rules debug select "add React component with user data loading"
-ai-rules debug compile "add React component with user data loading"
-```
+<summary><strong>Full compile output</strong></summary>
 
 ```text
 ## AI Rules Contract
+
+### Core
+- Follow the selected rule contract below when writing code for this task.
+- If selected rules conflict, stop and ask before choosing a pattern.
+- Do not invent project standards that are not in the selected rules or visible code.
 
 ### Selected Rules
 - react.no-fetch-in-components
 
 ### Mandatory Instructions
-- [react.no-fetch-in-components] Do not call fetch directly inside components.
-  Prefer: Use a hook or loader; keep components presentational.
+- [react.no-fetch-in-components] Do not call `fetch` (or similar IO) directly inside components. Prefer: Use a dedicated data layer — hooks, loaders, or server components — and keep components presentational.
+
+### Examples
+Rule react.no-fetch-in-components:
+// avoid: fetch inside the component body
+    // prefer: a hook or loader the component consumes
 
 ## User Task
-add React component with user data loading
+Add UserCard data loading
 ```
-
-Only matched rules enter the prompt — not your entire library.
 
 </details>
 
@@ -256,7 +275,15 @@ cd ai-rules
 npm install
 npm test
 npm run build
+npm run demo   # rebuild docs/demo-transcript.txt from OpenCode export + live CLI
 npm pack
+```
+
+To re-record the README demo after a new OpenCode session:
+
+```bash
+opencode export <session-id> > docs/demo-project/create-rule-session.json
+npm run demo
 ```
 
 </details>

@@ -1,0 +1,17 @@
+export const theme = {
+  bg: "#09090b",
+  panel: "#111113",
+  border: "#27272a",
+  titleBar: "#18181b",
+  text: "#e4e4e7",
+  muted: "#71717a",
+  accent: "#fafafa",
+  green: "#4ade80",
+  blue: "#60a5fa",
+  purple: "#a78bfa",
+  cyan: "#22d3ee",
+  red: "#f87171",
+  yellow: "#facc15",
+  font: "'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace",
+  sans: "'Inter', 'SF Pro Display', system-ui, sans-serif",
+};

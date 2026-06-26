@@ -1,0 +1,26 @@
+{
+  "name": "ai-rules-demo-video",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Remotion demo video for ai-rules",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts AiRulesDemo ../docs/demo.mp4",
+    "render:gif": "remotion render src/index.ts AiRulesDemo ../docs/demo.gif --codec=gif",
+    "still": "remotion still src/index.ts AiRulesDemo ../docs/demo-poster.png --frame=45"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.483",
+    "@remotion/renderer": "^4.0.483",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remotion": "^4.0.483"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  }
+}

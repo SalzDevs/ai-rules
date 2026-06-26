@@ -1,0 +1,115 @@
+$ cd my-app
+$ npx ai-rules setup
+ai-rules is ready.
+
+Rule folder:
+- personal: ~/.config/ai-rules/rules
+
+Detected tools: opencode, pi
+
+Integrations:
+- OpenCode /airules and /create-rule commands -> my-app/.opencode/commands/airules.md
+my-app/.opencode/commands/create-rule.md
+- Pi /airules and /create-rule extension -> my-app/.pi/extensions/ai-rules.ts
+
+Next steps:
+1. In Pi or OpenCode: /create-rule (optionally add a short seed, e.g. /create-rule no fetch in React components)
+2. ai-rules run "your coding task"
+3. In OpenCode: /airules your coding task
+4. In Pi: /airules your coding task
+
+$ opencode
+
+> /create-rule no fetch directly inside React components
+
+agent> Let's create your rule. Seed detected: **"no fetch directly inside React components"**. I'll incorporate that as we go.
+
+**Question 1:** What should the agent avoid or always do? (Expanding on the seed — any additional details?)
+
+Examples: "Avoid calling `fetch` directly in React components" / "Extract API calls into custom hooks or service files"
+you> avoit calling fetch directly in React components
+agent> **Question 2:** What should the agent do instead?
+
+Examples: "Use a custom hook (e.g., `useFetchUsers`)", "Use a service layer file", "Use React Query / TanStack Query", etc.
+you> use a custom hook
+agent> **Question 3:** When does this rule apply? (plain language for Trigger)
+
+Example: "When writing a React component that needs data from an API or when reviewing a PR that contains data-fetching logic in a component."
+you> when writting an ai component that needs data from an api
+agent> **Question 4:** Why does this matter? (Rationale — or I can infer: keeps components testable, separates concerns, avoids coupling UI to the fetch implementation)
+
+Want me to infer it, or do you have a specific reason?
+you> infer it
+agent> **Question 5:** File path patterns (globs) — this likely applies to React component files. Narrow to `**/*.{tsx,jsx}` or keep default `**/*`?
+
+**Question 6:** Languages — TypeScript and/or JavaScript?
+
+Answer both and I'll move to task types next.
+you> yup and yup
+agent> **Question 7:** Task types that should surface this rule. Default is `feature, refactor` — any others? (`fix`, `test`, `docs`, `review`, `chore`)
+you> feature, refactor
+agent> **Question 8:** Trigger keywords that should surface this rule in task text — e.g., `fetch`, `api`, `data`, `component`.
+
+Which keywords make sense?
+you> fetch,api,data,component
+agent> **Question 9:** Severity — `low`, `medium` (default), or `high` (hard must-not-violate)?
+you> high
+agent> **Question 10:** Suggested rule id: `react.no-direct-fetch`. Works?
+
+**Question 11:** Bad vs good example — want one in the file? (Optional, but if yes I'll write a short inline snippet.)
+you> sounds nice
+agent> Preview ready. Save, Edit, or Cancel?
+you> save
+agent> Saved to `~/.config/ai-rules/rules/react.no-direct-fetch.md`.
+
+Test it with:
+
+```
+ai-rules debug select "add a fetch call to the UsersPage component"
+```
+you> ai-rules debug select "add a fetch call to the UsersPage component"
+agent> Rule is live and matched with a score of **96**. Ready to go.
+
+$ ls ~/.config/ai-rules/rules/
+react.no-direct-fetch.md
+
+> /airules Add UserCard data loading
+
+# OpenCode runs this shell hook from .opencode/commands/airules.md:
+$ ai-rules debug compile --budget 800 --no-resolve-conflicts "Add UserCard data loading"
+
+## AI Rules Contract
+
+### Core
+- Follow the selected rule contract below when writing code for this task.
+- If selected rules conflict, stop and ask before choosing a pattern.
+- Do not invent project standards that are not in the selected rules or visible code.
+
+### Selected Rules
+- react.no-direct-fetch
+
+### Mandatory Instructions
+- [react.no-direct-fetch] Do not call `fetch` directly inside React components. Extract data fetching into custom hooks. Prefer: Use a custom hook (e.g. `useUsers`, `usePosts`) to encapsulate fetch logic, state management, and error handling.
+
+### Examples
+Rule react.no-direct-fetch:
+```tsx
+// Bad — fetch inside a component
+function UsersPage() {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    fetch("/api/users").then((r) => r.json()).then(setUsers);
+  }, []);
+  return <UserList users={users} />;
+}
+
+// Good — extracted into a custom hook
+function UsersPage() {
+  const { data: users, isLoading } = useUsers();
+  return <UserList users={users} isLoading={isLoading} />;
+}
+```
+
+## User Task
+Add UserCard data loading
+
