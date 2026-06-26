@@ -54,7 +54,7 @@ ai-rules "your coding task"
 
 `ai-rules setup` is the only command you need to get started. It:
 
-- creates personal and repo rule folders
+- creates your personal rule folder
 - detects installed coding tools
 - installs the native OpenCode `/airules` command
 - installs the native Pi `/airules` extension
@@ -66,7 +66,7 @@ ai-rules setup --global
 ai-rules setup --force
 ```
 
-Add your own rules as Markdown files in `.ai-rules/rules/` or `~/.config/ai-rules/rules/` before running tasks.
+Add your own rules as Markdown files in `~/.config/ai-rules/rules/` before running tasks.
 
 ## Advanced / debug
 
@@ -89,7 +89,6 @@ smart-pi "task"
 ## Rule Locations
 
 - Personal rules: `~/.config/ai-rules/rules/`
-- Repo rules: `.ai-rules/rules/`
 - Personal conflict overrides: `~/.config/ai-rules/overrides.yaml`
 
 Rules are Markdown files with YAML frontmatter and `Trigger`, `Rule`, `Prefer`, `Rationale`, and optional `Example` sections.

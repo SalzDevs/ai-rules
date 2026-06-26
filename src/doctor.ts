@@ -1,5 +1,5 @@
 import { agentIntegrations } from "./integrations/registry.js";
-import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
+import { defaultPersonalRulesDir, rulesSubdir } from "./paths.js";
 import { pathExists } from "./file-system.js";
 import { countActiveRules } from "./rule-files.js";
 import { detectAvailableTools } from "./tools.js";
@@ -9,7 +9,7 @@ export interface DoctorResult {
   checks: Array<{ name: string; status: "ok" | "warn" | "fail"; detail: string }>;
 }
 
-export async function runDoctor(cwd: string): Promise<DoctorResult> {
+export async function runDoctor(_cwd: string): Promise<DoctorResult> {
   const checks: DoctorResult["checks"] = [];
 
   const personalRules = rulesSubdir(defaultPersonalRulesDir());
@@ -19,21 +19,14 @@ export async function runDoctor(cwd: string): Promise<DoctorResult> {
     checks.push({ name: "personal rules", status: "warn", detail: "Missing. Run `ai-rules setup`." });
   }
 
-  const repoRules = rulesSubdir(repoRulesDir(cwd));
-  if (await pathExists(repoRules)) {
-    checks.push({ name: "repo rules", status: "ok", detail: repoRules });
-  } else {
-    checks.push({ name: "repo rules", status: "warn", detail: "Missing. Run `ai-rules setup`." });
-  }
-
-  const ruleCount = await countActiveRules(cwd);
+  const ruleCount = await countActiveRules(_cwd);
   checks.push({
     name: "rule count",
     status: ruleCount > 0 ? "ok" : "warn",
     detail:
       ruleCount > 0
         ? `${ruleCount} active rules`
-        : "No active rules yet. Add Markdown files to .ai-rules/rules/ or ~/.config/ai-rules/rules/",
+        : `No active rules yet. Add Markdown files to ${personalRules}.`,
   });
 
   const tools = await detectAvailableTools();
@@ -44,8 +37,8 @@ export async function runDoctor(cwd: string): Promise<DoctorResult> {
   });
 
   for (const integration of agentIntegrations) {
-    const local = await integration.findInstalled(cwd, false);
-    const global = await integration.findInstalled(cwd, true);
+    const local = await integration.findInstalled(_cwd, false);
+    const global = await integration.findInstalled(_cwd, true);
 
     if (local || global) {
       checks.push({

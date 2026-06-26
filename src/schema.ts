@@ -11,7 +11,7 @@ import type {
 } from "./types.js";
 
 const statuses = new Set<RuleStatus>(["active", "draft", "archived"]);
-const layers = new Set<RuleLayer>(["personal", "repo"]);
+const layers = new Set<RuleLayer>(["personal"]);
 const severities = new Set<Severity>(["low", "medium", "high"]);
 const taskKinds = new Set<TaskKind>([
   "feature",

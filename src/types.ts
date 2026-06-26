@@ -1,5 +1,5 @@
 export type RuleStatus = "active" | "draft" | "archived";
-export type RuleLayer = "personal" | "repo";
+export type RuleLayer = "personal";
 export type Severity = "low" | "medium" | "high";
 export type TaskKind =
   | "feature"

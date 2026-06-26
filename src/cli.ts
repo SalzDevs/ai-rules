@@ -4,7 +4,7 @@ import { formatDoctorSummary, runDoctor } from "./doctor.js";
 import { getIntegration } from "./integrations/registry.js";
 import type { IntegrationInstallScope } from "./integrations/types.js";
 import { ensureDir } from "./preflight.js";
-import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
+import { defaultPersonalRulesDir, rulesSubdir } from "./paths.js";
 import { closePrompts, readStdinIfAvailable } from "./prompt.js";
 import { prepareTask } from "./run.js";
 import { runTask } from "./run-task.js";
@@ -124,8 +124,7 @@ async function handleDebug(parsed: ParsedArgs, cwd: string): Promise<number> {
     }
     case "init": {
       await ensureDir(rulesSubdir(defaultPersonalRulesDir()));
-      await ensureDir(rulesSubdir(repoRulesDir(cwd)));
-      console.log(`Initialized ${rulesSubdir(repoRulesDir(cwd))}`);
+      console.log(`Initialized ${rulesSubdir(defaultPersonalRulesDir())}`);
       return 0;
     }
     case "install": {

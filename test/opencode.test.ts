@@ -6,6 +6,7 @@ import test from "node:test";
 import { runAiRulesCli } from "../src/cli.js";
 import { installOpenCodeCommand, renderOpenCodeCommand } from "../src/opencode.js";
 import { runSetup } from "../src/setup.js";
+import { defaultPersonalRulesDir, rulesSubdir } from "../src/paths.js";
 import { resolveTool } from "../src/tools.js";
 
 test("renders an OpenCode command that injects ai-rules debug compile output", () => {
@@ -36,7 +37,7 @@ test("installs a repo-local OpenCode slash command", async () => {
   assert.match(command, /ai-rules debug compile --budget 800 --no-resolve-conflicts/);
 });
 
-test("setup creates rule folders and integrations", async () => {
+test("setup creates personal rule folder and integrations", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-setup-"));
   process.env.XDG_CONFIG_HOME = path.join(root, ".config");
   await fs.mkdir(path.join(root, ".git"));
@@ -49,8 +50,8 @@ test("setup creates rule folders and integrations", async () => {
 
   assert.match(result.integrations.join("\n"), /OpenCode \/airules command/);
   assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
-  await fs.access(path.join(root, ".ai-rules", "rules"));
-  const ruleEntries = await fs.readdir(path.join(root, ".ai-rules", "rules"));
+  assert.equal(result.personalRulesDir, rulesSubdir(defaultPersonalRulesDir()));
+  const ruleEntries = await fs.readdir(result.personalRulesDir);
   assert.equal(ruleEntries.length, 0);
 });
 
@@ -79,14 +80,14 @@ test("resolveTool rejects unknown explicit tool", async () => {
   await assert.rejects(() => resolveTool("unknown-tool"), /Unknown tool/);
 });
 
-async function writeMinimalRule(cwd: string): Promise<void> {
-  const file = path.join(cwd, ".ai-rules", "rules", "general.minimal-diff.md");
+async function writeMinimalRule(_cwd: string): Promise<void> {
+  const file = path.join(rulesSubdir(defaultPersonalRulesDir()), "general.minimal-diff.md");
   await fs.writeFile(
     file,
     `---
 id: general.minimal-diff
 status: active
-layer: repo
+layer: personal
 severity: medium
 scope:
   languages: []

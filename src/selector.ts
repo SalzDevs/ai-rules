@@ -38,11 +38,6 @@ function scoreRule(rule: Rule, task: string, context: SelectionResult["context"]
   const reasons: string[] = [];
   let score = severityScore[rule.metadata.severity];
 
-  if (rule.metadata.layer === "repo") {
-    score += 5;
-    reasons.push("repo rule");
-  }
-
   const languageMatches = overlap(rule.metadata.scope.languages, context.languages);
   if (languageMatches > 0) {
     score += 20 + languageMatches * 3;

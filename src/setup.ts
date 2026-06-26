@@ -2,7 +2,7 @@ import { DEFAULT_TOKEN_BUDGET } from "./compile-contract.js";
 import { resolveAiRulesCommand } from "./bin-path.js";
 import { selectIntegrations } from "./integrations/registry.js";
 import type { IntegrationInstallScope } from "./integrations/types.js";
-import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
+import { defaultPersonalRulesDir, rulesSubdir } from "./paths.js";
 import { ensureDir } from "./preflight.js";
 import { detectAvailableTools } from "./tools.js";
 
@@ -17,17 +17,14 @@ export interface SetupOptions {
 
 export interface SetupResult {
   personalRulesDir: string;
-  repoRulesDir: string;
   availableTools: string[];
   integrations: string[];
 }
 
 export async function runSetup(options: SetupOptions): Promise<SetupResult> {
   const personalRulesDir = rulesSubdir(defaultPersonalRulesDir());
-  const repoRules = rulesSubdir(repoRulesDir(options.cwd));
 
   await ensureDir(personalRulesDir);
-  await ensureDir(repoRules);
 
   const availableTools = await detectAvailableTools();
   const integrations: string[] = [];
@@ -48,7 +45,6 @@ export async function runSetup(options: SetupOptions): Promise<SetupResult> {
 
   return {
     personalRulesDir,
-    repoRulesDir: repoRules,
     availableTools,
     integrations,
   };
@@ -58,9 +54,8 @@ export function formatSetupSummary(result: SetupResult): string {
   const lines = [
     "ai-rules is ready.",
     "",
-    "Rule folders:",
+    "Rule folder:",
     `- personal: ${result.personalRulesDir}`,
-    `- repo: ${result.repoRulesDir}`,
     "",
     `Detected tools: ${result.availableTools.length > 0 ? result.availableTools.join(", ") : "none"}`,
   ];
@@ -72,7 +67,7 @@ export function formatSetupSummary(result: SetupResult): string {
   lines.push(
     "",
     "Next steps:",
-    "1. Add rule Markdown files to the folders above",
+    "1. Add rule Markdown files to the folder above",
     '2. ai-rules run "your coding task"',
     "3. In OpenCode: /airules your coding task",
     "4. In Pi: /airules your coding task",

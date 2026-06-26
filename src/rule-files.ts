@@ -2,16 +2,15 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import YAML from "yaml";
 import { listFilesRecursive, pathExists } from "./file-system.js";
-import { defaultPersonalRulesDir, overridesFile, repoRulesDir, rulesSubdir } from "./paths.js";
+import { defaultPersonalRulesDir, overridesFile, rulesSubdir } from "./paths.js";
 import { assertConflictOverride, assertRuleBody, assertRuleMetadata } from "./schema.js";
-import type { ConflictOverride, Rule, RuleBody, RuleLayer } from "./types.js";
+import type { ConflictOverride, Rule, RuleBody } from "./types.js";
 
 const ruleFileExtensions = new Set([".md", ".markdown"]);
 
-export async function loadRules(cwd: string): Promise<Rule[]> {
-  const personal = await loadRulesFromLayer(rulesSubdir(defaultPersonalRulesDir()), "personal");
-  const repo = await loadRulesFromLayer(rulesSubdir(repoRulesDir(cwd)), "repo");
-  return [...personal, ...repo].filter((rule) => rule.metadata.status === "active");
+export async function loadRules(_cwd: string): Promise<Rule[]> {
+  const personal = await loadRulesFromDir(rulesSubdir(defaultPersonalRulesDir()));
+  return personal.filter((rule) => rule.metadata.status === "active");
 }
 
 export async function countActiveRules(cwd: string): Promise<number> {
@@ -20,30 +19,22 @@ export async function countActiveRules(cwd: string): Promise<number> {
 
 export async function assertRulesExist(cwd: string): Promise<void> {
   if ((await countActiveRules(cwd)) === 0) {
-    throw new Error(
-      "No active rules found. Add Markdown rule files to .ai-rules/rules/ or ~/.config/ai-rules/rules/.",
-    );
+    throw new Error(`No active rules found. Add Markdown rule files to ${rulesSubdir(defaultPersonalRulesDir())}.`);
   }
 }
 
-export async function loadOverrides(cwd: string): Promise<ConflictOverride[]> {
-  const files = [overridesFile(defaultPersonalRulesDir()), overridesFile(repoRulesDir(cwd))];
-  const overrides: ConflictOverride[] = [];
-
-  for (const file of files) {
-    if (!(await pathExists(file))) {
-      continue;
-    }
-
-    const parsed = YAML.parse(await fs.readFile(file, "utf8")) as unknown;
-    const values = Array.isArray(parsed) ? parsed : [];
-    overrides.push(...values.map((value) => assertConflictOverride(value, file)));
+export async function loadOverrides(_cwd: string): Promise<ConflictOverride[]> {
+  const file = overridesFile(defaultPersonalRulesDir());
+  if (!(await pathExists(file))) {
+    return [];
   }
 
-  return overrides;
+  const parsed = YAML.parse(await fs.readFile(file, "utf8")) as unknown;
+  const values = Array.isArray(parsed) ? parsed : [];
+  return values.map((value) => assertConflictOverride(value, file));
 }
 
-async function loadRulesFromLayer(root: string, layer: RuleLayer): Promise<Rule[]> {
+async function loadRulesFromDir(root: string): Promise<Rule[]> {
   const files = (await listFilesRecursive(root)).filter((file) => ruleFileExtensions.has(path.extname(file)));
 
   return Promise.all(
@@ -52,7 +43,7 @@ async function loadRulesFromLayer(root: string, layer: RuleLayer): Promise<Rule[
       return {
         metadata: {
           ...assertRuleMetadata(parsed.metadata, file),
-          layer,
+          layer: "personal" as const,
         },
         body: assertRuleBody(parsed.body, file),
         sourcePath: file,

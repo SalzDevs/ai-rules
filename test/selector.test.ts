@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { compileRulePack } from "../src/compiler.js";
+import { defaultPersonalRulesDir, rulesSubdir } from "../src/paths.js";
 import { prepareTask } from "../src/run.js";
 import { selectForTask } from "../src/selector.js";
 
@@ -12,7 +13,7 @@ test("prepareTask fails when no rules exist", async () => {
   await assert.rejects(() => prepareTask("Implement a small TypeScript feature", fixture.cwd, 800, false), /No active rules found/);
 });
 
-test("selector matches scoped repo rules and includes high-risk examples", async () => {
+test("selector matches scoped rules and includes high-risk examples", async () => {
   const fixture = await createFixture();
   await writeRule(
     fixture.cwd,
@@ -107,7 +108,7 @@ async function createFixture(): Promise<{ cwd: string }> {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-test-"));
   process.env.XDG_CONFIG_HOME = path.join(root, ".config");
   await fs.mkdir(path.join(root, ".git"));
-  await fs.mkdir(path.join(root, ".ai-rules", "rules"), { recursive: true });
+  await fs.mkdir(rulesSubdir(defaultPersonalRulesDir()), { recursive: true });
   await fs.writeFile(
     path.join(root, "package.json"),
     JSON.stringify({ dependencies: { react: "latest" }, devDependencies: { typescript: "latest" } }),
@@ -130,14 +131,14 @@ async function writeRule(
   example?: string,
   conflictsWith: string[] = [],
 ): Promise<void> {
-  const file = path.join(cwd, ".ai-rules", "rules", `${id}.md`);
+  const file = path.join(rulesSubdir(defaultPersonalRulesDir()), `${id}.md`);
   await fs.writeFile(
     file,
     [
       "---",
       `id: ${id}`,
       "status: active",
-      "layer: repo",
+      "layer: personal",
       `severity: ${severity}`,
       "scope:",
       `  languages: [${languages.join(", ")}]`,
