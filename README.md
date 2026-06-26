@@ -1,115 +1,163 @@
+<div align="center">
+
 # ai-rules
 
-**You rule your AI — not the other way around.**
+### You rule your AI — not the other way around.
 
-Coding agents ship with implicit defaults: generic style, one-size-fits-all patterns, instructions buried in context you never wrote and cannot reuse. `ai-rules` is a local-first instruction layer that puts your standards back in your hands. You define rules once, select only what fits each task, and run [Pi](https://github.com/earendil-works/pi) or [OpenCode](https://opencode.ai) under a compact rule contract.
+**Local-first coding rules for [Pi](https://github.com/earendil-works/pi) and [OpenCode](https://opencode.ai).**  
+Define standards once → select what fits each task → run the agent under a contract you own.
 
-Rules live on your machine — outside the model context — so they persist across sessions, stay inspectable, and do not bloat every prompt.
+<br />
 
-> [!NOTE]
-> Early beta. Personal rules only. Supported agents: Pi and OpenCode.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)
+![Status](https://img.shields.io/badge/status-early%20beta-orange)
+
+</div>
+
+<br />
+
+```bash
+/create-rule no fetch in React components   # you write the rule (once)
+/airules Add UserCard data loading           # agent runs under it (every task)
+```
+
+<br />
+
+---
+
+<br />
 
 ## Quickstart
-
-1. Run setup from your project:
 
 ```bash
 npx ai-rules setup
 ```
 
-2. Create your first rule in Pi or OpenCode:
+In Pi or OpenCode:
 
 ```bash
 /create-rule
-/create-rule no fetch directly inside React components
-```
-
-3. Run a task with your rules applied:
-
-```bash
 /airules Implement data loading in src/components/UserCard.tsx
 ```
 
-Or from the CLI (after you have at least one active rule):
+From the terminal:
 
 ```bash
 ai-rules run "Implement data loading in src/components/UserCard.tsx"
-```
-
-4. Check everything is wired up:
-
-```bash
 ai-rules doctor
 ```
 
-Install globally if you prefer:
+<details>
+<summary><strong>Expected output after <code>setup</code></strong></summary>
+
+```text
+ai-rules is ready.
+
+Rule folder:
+- personal: ~/.config/ai-rules/rules
+
+Detected tools: pi, opencode
+
+Integrations:
+- Pi /airules and /create-rule extension -> .pi/extensions/ai-rules.ts
+- OpenCode /airules and /create-rule commands -> .opencode/commands/airules.md
+
+Next steps:
+1. In Pi or OpenCode: /create-rule
+2. ai-rules run "your coding task"
+```
+
+</details>
+
+<details>
+<summary><strong>Install globally</strong></summary>
 
 ```bash
 npm install -g ai-rules
-ai-rules setup
+ai-rules setup              # repo-local integrations
+ai-rules setup --global     # user-wide integrations
+ai-rules setup --force      # overwrite existing integration files
 ```
 
-Use `ai-rules setup --global` to install harness integrations in your user config instead of the current repo. Use `--force` to overwrite existing integration files.
+</details>
 
-## Why ai-rules Exists
+<br />
 
-I built this to fix failure modes I kept hitting with coding agents — not to add another abstraction layer on top of them.
+## How it works
 
-### #1: The Agent Did Not Follow My Standards
+```text
+       Developer Task
+              │
+              ▼
+         ┌─────────┐
+         │ ai-rules │
+         └────┬────┘
+              │
+              ▼
+       Rule Selection          ← keywords · globs · scope · task kind
+              │
+              ▼
+   Compiled Rule Contract     ← compact prompt, token-budgeted
+              │
+              ▼
+      AI Coding Agent          ← Pi or OpenCode
+```
 
-**The problem.** You care about how code is written in *your* codebase: minimal diffs, no fetch in components, naming conventions you have refined over years. The agent does not know any of that unless you repeat it every session — or bury it in a system prompt you cannot reuse.
+Your rules live in `~/.config/ai-rules/rules/`. They stay **outside** the model context until a task needs them.
 
-**The fix.** Store standards as personal rule files in `~/.config/ai-rules/rules/`. Each rule is Markdown with YAML frontmatter: triggers, scope, severity, and the instruction itself. They are yours. Edit them directly, version them, and carry them across projects.
+<details>
+<summary><strong>See selection and compilation</strong></summary>
 
-### #2: Every Task Got the Full Rulebook
+```bash
+ai-rules debug select "add React component with user data loading"
+ai-rules debug compile "add React component with user data loading"
+```
 
-**The problem.** Dumping all your preferences into every prompt wastes context and dilutes what matters. A refactor task should not load rules about API design. A React task should not load Python conventions.
+```text
+## AI Rules Contract
 
-**The fix.** `ai-rules` selects only the rules relevant to the task — matched by keywords, file paths, languages, frameworks, and task kind — then compiles a compact contract. The agent sees what applies *now*, not everything you have ever decided.
+### Selected Rules
+- react.no-fetch-in-components
 
-### #3: I Did Not Own the Defaults
+### Mandatory Instructions
+- [react.no-fetch-in-components] Do not call fetch directly inside components.
+  Prefer: Use a hook or loader; keep components presentational.
 
-**The problem.** When rules only exist inside a chat, the model effectively sets the standard. You cannot inspect what was applied, diff it, or improve it over time.
+## User Task
+add React component with user data loading
+```
 
-**The fix.** Create and refine rules in the harness with `/create-rule`. The agent runs a structured interview (with selectable options for common choices), shows a preview, and writes a file you control. Then `/airules` or `ai-rules run` applies that library to real work.
+Only matched rules enter the prompt — not your entire library.
 
-### Summary
+</details>
 
-Software engineering is about constraints you choose deliberately. `ai-rules` makes those constraints explicit, local, and task-scoped — so the agent works under your standards, not the other way around.
+<br />
 
-## Reference
+## Why ai-rules exists
 
-### CLI
+> [!IMPORTANT]
+> Coding agents ship with defaults you never wrote. `ai-rules` makes **your** standards explicit, local, and task-scoped.
 
-| Command | Description |
+| Problem | What ai-rules does |
 | --- | --- |
-| `ai-rules setup` | Create your personal rule folder and install Pi/OpenCode integrations |
-| `ai-rules run "task"` | Select rules, compile a contract, and launch Pi or OpenCode |
-| `ai-rules doctor` | Check rule folder, rule count, detected tools, and integrations |
-| `ai-rules "task"` | Shortcut for `ai-rules run "task"` |
+| You repeat the same instructions every session | Rules persist as Markdown in `~/.config/ai-rules/rules/` |
+| Every prompt gets the full rulebook | Selects by keywords, globs, language, framework, and task kind |
+| Standards vanish when the chat ends | `/create-rule` writes a file; `/airules` applies it to real work |
 
-Setup flags: `--global`, `--force`, `--tool pi|opencode`.
+The agent should work under constraints **you** chose — not implicit model defaults.
 
-### Harness commands
+<br />
 
-Installed by `ai-rules setup` into `.pi/extensions/ai-rules.ts` (Pi) and `.opencode/commands/` (OpenCode).
+## Example rule
 
-| Command | Description |
+**`react.no-fetch-in-components`**
+
+| | |
 | --- | --- |
-| `/create-rule` | Interview and write a personal rule file |
-| `/create-rule <seed>` | Start the interview with a short seed (e.g. a convention you want to encode) |
-| `/airules <task>` | Compile selected rules for the task and run it in the harness |
-
-### Rule files
-
-**Location**
-
-- Rules: `~/.config/ai-rules/rules/*.md`
-- Conflict overrides: `~/.config/ai-rules/overrides.yaml`
-
-**Format**
-
-Markdown with YAML frontmatter and these sections: `Trigger`, `Rule`, `Prefer`, `Rationale`, and optional `Example`.
+| **When** | Adding or changing data loading in React components |
+| **Enforces** | No `fetch` or similar IO inside component bodies |
+| **Why** | IO belongs in hooks, loaders, or server layers — easier to test and reuse |
 
 ```markdown
 ---
@@ -146,9 +194,45 @@ Colocated fetch logic is hard to test, cache, and reuse across routes.
     // prefer: a hook or loader the component consumes
 ```
 
-### Debug commands
+<br />
 
-For inspecting selection and compiled output without launching an agent:
+---
+
+<br />
+
+<details>
+<summary><strong>CLI reference</strong></summary>
+
+| Command | Description |
+| --- | --- |
+| `ai-rules setup` | Create rule folder + install Pi/OpenCode integrations |
+| `ai-rules run "task"` | Select rules, compile contract, launch agent |
+| `ai-rules doctor` | Check rules, tools, and integrations |
+| `ai-rules "task"` | Shortcut for `ai-rules run "task"` |
+
+**Setup flags:** `--global` · `--force` · `--tool pi|opencode`
+
+**Harness commands** (installed by setup):
+
+| Command | Description |
+| --- | --- |
+| `/create-rule` | Interview → preview → save a personal rule |
+| `/create-rule <seed>` | Start with a short seed phrase |
+| `/airules <task>` | Compile selected rules + run in harness |
+
+**Paths**
+
+- Rules: `~/.config/ai-rules/rules/*.md`
+- Conflict overrides: `~/.config/ai-rules/overrides.yaml`
+
+Rule format: Markdown + YAML frontmatter with `Trigger`, `Rule`, `Prefer`, `Rationale`, and optional `Example`.
+
+</details>
+
+<details>
+<summary><strong>Debug &amp; legacy</strong></summary>
+
+Inspect without launching an agent:
 
 ```bash
 ai-rules debug select "your task"
@@ -157,14 +241,30 @@ ai-rules debug install opencode
 ai-rules debug install pi
 ```
 
-Legacy wrappers `smart-opencode` and `smart-pi` still work.
+Legacy wrappers: `smart-opencode` · `smart-pi`
 
-## Develop
+</details>
+
+<details>
+<summary><strong>Development</strong></summary>
+
+Requires Node.js 20+.
 
 ```bash
+git clone https://github.com/SalzDevs/ai-rules.git
+cd ai-rules
+npm install
 npm test
 npm run build
 npm pack
 ```
 
-Requires Node.js 20+.
+</details>
+
+<br />
+
+<div align="center">
+
+**Early beta** · personal rules only · Pi & OpenCode
+
+</div>
