@@ -1,7 +1,6 @@
-import { pathExists } from "./file-system.js";
+import { agentIntegrations } from "./integrations/registry.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
-import { piExtensionInstalled } from "./pi.js";
-import { openCodeCommandInstalled } from "./setup.js";
+import { pathExists } from "./file-system.js";
 import { countRepoRules } from "./starter-rules.js";
 import { detectAvailableTools } from "./tools.js";
 
@@ -41,36 +40,26 @@ export async function runDoctor(cwd: string): Promise<DoctorResult> {
     detail: tools.length > 0 ? tools.join(", ") : "No supported coding tool found on PATH",
   });
 
-  const localOpenCode = await openCodeCommandInstalled(cwd, false);
-  const globalOpenCode = await openCodeCommandInstalled(cwd, true);
-  if (localOpenCode || globalOpenCode) {
-    checks.push({
-      name: "OpenCode integration",
-      status: "ok",
-      detail: localOpenCode ?? globalOpenCode ?? "",
-    });
-  } else if (tools.includes("opencode")) {
-    checks.push({
-      name: "OpenCode integration",
-      status: "warn",
-      detail: "OpenCode is installed but /airules is missing. Run `ai-rules setup`.",
-    });
-  }
+  for (const integration of agentIntegrations) {
+    const local = await integration.findInstalled(cwd, false);
+    const global = await integration.findInstalled(cwd, true);
 
-  const localPi = await piExtensionInstalled(cwd, false);
-  const globalPi = await piExtensionInstalled(cwd, true);
-  if (localPi || globalPi) {
-    checks.push({
-      name: "Pi integration",
-      status: "ok",
-      detail: localPi ?? globalPi ?? "",
-    });
-  } else if (tools.includes("pi")) {
-    checks.push({
-      name: "Pi integration",
-      status: "warn",
-      detail: "Pi is installed but /airules extension is missing. Run `ai-rules setup`.",
-    });
+    if (local || global) {
+      checks.push({
+        name: integration.doctorName,
+        status: "ok",
+        detail: local ?? global ?? "",
+      });
+      continue;
+    }
+
+    if (tools.includes(integration.relatedTool)) {
+      checks.push({
+        name: integration.doctorName,
+        status: "warn",
+        detail: `${integration.relatedTool} is installed but /airules is missing. Run \`ai-rules setup\`.`,
+      });
+    }
   }
 
   const ok = !checks.some((check) => check.status === "fail");

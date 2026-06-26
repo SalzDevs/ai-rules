@@ -1,8 +1,10 @@
+import { spawn } from "node:child_process";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import type { ToolName } from "./tool-adapters.js";
 
 const execFileAsync = promisify(execFile);
+
+export type ToolName = "opencode" | "pi";
 
 const defaultCommands: Record<ToolName, string> = {
   opencode: "opencode",
@@ -72,4 +74,17 @@ export async function resolveTool(explicit?: string): Promise<ToolName> {
   }
 
   return available[0];
+}
+
+export async function launchTool(tool: ToolName, prompt: string): Promise<number> {
+  const command = resolveToolCommand(tool);
+  const child = spawn(command, [prompt], {
+    stdio: "inherit",
+    shell: false,
+  });
+
+  return new Promise((resolve, reject) => {
+    child.on("error", reject);
+    child.on("exit", (code) => resolve(code ?? 1));
+  });
 }

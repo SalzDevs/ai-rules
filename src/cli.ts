@@ -1,6 +1,8 @@
+import { resolveAiRulesCommand } from "./bin-path.js";
+import { DEFAULT_TOKEN_BUDGET, parseTokenBudget } from "./compile-contract.js";
 import { formatDoctorSummary, runDoctor } from "./doctor.js";
-import { installOpenCodeCommand, type OpenCodeInstallScope } from "./opencode.js";
-import { installPiExtension, type PiInstallScope } from "./pi.js";
+import { getIntegration } from "./integrations/registry.js";
+import type { IntegrationInstallScope } from "./integrations/types.js";
 import { ensureDir } from "./preflight.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
 import { promoteRule } from "./promote.js";
@@ -157,30 +159,23 @@ async function handleDebug(parsed: ParsedArgs, cwd: string): Promise<number> {
     }
     case "install": {
       const target = rest[0];
-      if (target === "opencode") {
-        const commandPath = await installOpenCodeCommand({
-          cwd,
-          scope: readInstallScope(parsed),
-          commandName: readStringFlag(parsed, "name", "airules"),
-          budget: readBudget(parsed),
-          force: Boolean(parsed.flags.get("force")),
-        });
-        console.log(`Installed OpenCode command: ${commandPath}`);
-        return 0;
+      const integration = target ? getIntegration(target) : undefined;
+
+      if (!integration) {
+        throw new Error("Supported targets: `ai-rules debug install opencode|pi`.");
       }
 
-      if (target === "pi") {
-        const extensionPath = await installPiExtension({
-          cwd,
-          scope: readInstallScope(parsed),
-          budget: readBudget(parsed),
-          force: Boolean(parsed.flags.get("force")),
-        });
-        console.log(`Installed Pi extension: ${extensionPath}`);
-        return 0;
-      }
+      const artifactPath = await integration.install({
+        cwd,
+        scope: readInstallScope(parsed),
+        budget: readBudget(parsed),
+        force: Boolean(parsed.flags.get("force")),
+        aiRulesCommand: await resolveAiRulesCommand(),
+        commandName: readStringFlag(parsed, "name", "airules"),
+      });
 
-      throw new Error("Supported targets: `ai-rules debug install opencode|pi`.");
+      console.log(`Installed ${integration.setupLabel}: ${artifactPath}`);
+      return 0;
     }
     default:
       printDebugHelp();
@@ -239,12 +234,7 @@ async function readTask(positional: string[]): Promise<string> {
 
 function readBudget(parsed: ParsedArgs): number {
   const raw = parsed.flags.get("budget");
-  if (typeof raw !== "string") {
-    return 800;
-  }
-
-  const value = Number.parseInt(raw, 10);
-  return Number.isFinite(value) && value > 0 ? value : 800;
+  return typeof raw === "string" ? parseTokenBudget(raw) : DEFAULT_TOKEN_BUDGET;
 }
 
 function readLayer(parsed: ParsedArgs): RuleLayer | undefined {
@@ -257,7 +247,7 @@ function readLayer(parsed: ParsedArgs): RuleLayer | undefined {
   return undefined;
 }
 
-function readInstallScope(parsed: ParsedArgs): OpenCodeInstallScope | PiInstallScope {
+function readInstallScope(parsed: ParsedArgs): IntegrationInstallScope {
   return parsed.flags.has("global") ? "global" : "repo";
 }
 

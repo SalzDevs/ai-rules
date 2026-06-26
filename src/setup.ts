@@ -1,14 +1,13 @@
-import path from "node:path";
+import { DEFAULT_TOKEN_BUDGET } from "./compile-contract.js";
 import { resolveAiRulesCommand } from "./bin-path.js";
-import { pathExists } from "./file-system.js";
-import { installOpenCodeCommand, type OpenCodeInstallScope } from "./opencode.js";
-import { installPiExtension, type PiInstallScope } from "./pi.js";
-import { defaultOpenCodeConfigDir, defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
+import { selectIntegrations } from "./integrations/registry.js";
+import type { IntegrationInstallScope } from "./integrations/types.js";
+import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
 import { ensureDir } from "./preflight.js";
 import { countRepoRules, installStarterRules } from "./starter-rules.js";
 import { detectAvailableTools } from "./tools.js";
 
-export type IntegrationInstallScope = OpenCodeInstallScope | PiInstallScope;
+export type { IntegrationInstallScope } from "./integrations/types.js";
 
 export interface SetupOptions {
   cwd: string;
@@ -40,27 +39,16 @@ export async function runSetup(options: SetupOptions): Promise<SetupResult> {
   const scope: IntegrationInstallScope = options.global ? "global" : "repo";
   const aiRulesCommand = await resolveAiRulesCommand();
 
-  if (shouldInstallIntegration(options.tool, "opencode")) {
-    const commandPath = await installOpenCodeCommand({
+  for (const integration of selectIntegrations(options.tool)) {
+    const artifactPath = await integration.install({
       cwd: options.cwd,
       scope,
+      budget: DEFAULT_TOKEN_BUDGET,
+      force: options.force,
+      aiRulesCommand,
       commandName: "airules",
-      budget: 800,
-      force: options.force,
-      aiRulesCommand,
     });
-    integrations.push(`OpenCode /airules command -> ${commandPath}`);
-  }
-
-  if (shouldInstallIntegration(options.tool, "pi")) {
-    const extensionPath = await installPiExtension({
-      cwd: options.cwd,
-      scope,
-      budget: 800,
-      force: options.force,
-      aiRulesCommand,
-    });
-    integrations.push(`Pi /airules extension -> ${extensionPath}`);
+    integrations.push(`${integration.setupLabel} -> ${artifactPath}`);
   }
 
   return {
@@ -101,20 +89,4 @@ export function formatSetupSummary(result: SetupResult): string {
   );
 
   return lines.join("\n");
-}
-
-export async function openCodeCommandInstalled(cwd: string, global: boolean): Promise<string | undefined> {
-  const commandPath = global
-    ? path.join(defaultOpenCodeConfigDir(), "commands", "airules.md")
-    : path.join(cwd, ".opencode", "commands", "airules.md");
-
-  return (await pathExists(commandPath)) ? commandPath : undefined;
-}
-
-function shouldInstallIntegration(explicitTool: string | undefined, integration: "opencode" | "pi"): boolean {
-  if (!explicitTool) {
-    return true;
-  }
-
-  return explicitTool === integration;
 }
