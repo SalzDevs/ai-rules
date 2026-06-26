@@ -28,6 +28,14 @@ opencode
 /airules Implement data loading in src/components/UserCard.tsx
 ```
 
+Or in Pi:
+
+```sh
+npx ai-rules setup
+pi
+/airules Implement data loading in src/components/UserCard.tsx
+```
+
 ## Commands
 
 ```sh
@@ -51,6 +59,7 @@ ai-rules "your coding task"
 - adds starter example rules if the repo has none yet
 - detects installed coding tools
 - installs the native OpenCode `/airules` command
+- installs the native Pi `/airules` extension
 
 Optional flags:
 
@@ -78,6 +87,7 @@ Power-user commands are hidden under `debug`:
 ai-rules debug compile "task"
 ai-rules debug select "task"
 ai-rules debug install opencode
+ai-rules debug install pi
 ```
 
 Legacy wrappers still work:

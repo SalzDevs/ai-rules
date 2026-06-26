@@ -1,5 +1,6 @@
 import { pathExists } from "./file-system.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
+import { piExtensionInstalled } from "./pi.js";
 import { openCodeCommandInstalled } from "./setup.js";
 import { countRepoRules } from "./starter-rules.js";
 import { detectAvailableTools } from "./tools.js";
@@ -53,6 +54,22 @@ export async function runDoctor(cwd: string): Promise<DoctorResult> {
       name: "OpenCode integration",
       status: "warn",
       detail: "OpenCode is installed but /airules is missing. Run `ai-rules setup`.",
+    });
+  }
+
+  const localPi = await piExtensionInstalled(cwd, false);
+  const globalPi = await piExtensionInstalled(cwd, true);
+  if (localPi || globalPi) {
+    checks.push({
+      name: "Pi integration",
+      status: "ok",
+      detail: localPi ?? globalPi ?? "",
+    });
+  } else if (tools.includes("pi")) {
+    checks.push({
+      name: "Pi integration",
+      status: "warn",
+      detail: "Pi is installed but /airules extension is missing. Run `ai-rules setup`.",
     });
   }
 

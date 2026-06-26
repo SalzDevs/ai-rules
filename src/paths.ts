@@ -13,6 +13,10 @@ export function defaultOpenCodeConfigDir(): string {
   return path.join(xdgConfig && xdgConfig.length > 0 ? xdgConfig : path.join(os.homedir(), ".config"), "opencode");
 }
 
+export function defaultPiAgentDir(): string {
+  return path.join(os.homedir(), ".pi", "agent");
+}
+
 export function repoRulesDir(cwd: string): string {
   return path.join(cwd, repoRulesDirName);
 }

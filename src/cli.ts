@@ -1,5 +1,6 @@
 import { formatDoctorSummary, runDoctor } from "./doctor.js";
 import { installOpenCodeCommand, type OpenCodeInstallScope } from "./opencode.js";
+import { installPiExtension, type PiInstallScope } from "./pi.js";
 import { ensureDir } from "./preflight.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
 import { promoteRule } from "./promote.js";
@@ -155,19 +156,31 @@ async function handleDebug(parsed: ParsedArgs, cwd: string): Promise<number> {
       return 0;
     }
     case "install": {
-      if (rest[0] !== "opencode") {
-        throw new Error("Only `ai-rules debug install opencode` is supported.");
+      const target = rest[0];
+      if (target === "opencode") {
+        const commandPath = await installOpenCodeCommand({
+          cwd,
+          scope: readInstallScope(parsed),
+          commandName: readStringFlag(parsed, "name", "airules"),
+          budget: readBudget(parsed),
+          force: Boolean(parsed.flags.get("force")),
+        });
+        console.log(`Installed OpenCode command: ${commandPath}`);
+        return 0;
       }
 
-      const commandPath = await installOpenCodeCommand({
-        cwd,
-        scope: readOpenCodeInstallScope(parsed),
-        commandName: readStringFlag(parsed, "name", "airules"),
-        budget: readBudget(parsed),
-        force: Boolean(parsed.flags.get("force")),
-      });
-      console.log(`Installed OpenCode command: ${commandPath}`);
-      return 0;
+      if (target === "pi") {
+        const extensionPath = await installPiExtension({
+          cwd,
+          scope: readInstallScope(parsed),
+          budget: readBudget(parsed),
+          force: Boolean(parsed.flags.get("force")),
+        });
+        console.log(`Installed Pi extension: ${extensionPath}`);
+        return 0;
+      }
+
+      throw new Error("Supported targets: `ai-rules debug install opencode|pi`.");
     }
     default:
       printDebugHelp();
@@ -244,7 +257,7 @@ function readLayer(parsed: ParsedArgs): RuleLayer | undefined {
   return undefined;
 }
 
-function readOpenCodeInstallScope(parsed: ParsedArgs): OpenCodeInstallScope {
+function readInstallScope(parsed: ParsedArgs): OpenCodeInstallScope | PiInstallScope {
   return parsed.flags.has("global") ? "global" : "repo";
 }
 
@@ -272,6 +285,11 @@ OpenCode:
   opencode
   /airules your coding task
 
+Pi:
+  ai-rules setup
+  pi
+  /airules your coding task
+
 Shortcuts:
   ai-rules "your coding task"          Same as ai-rules run "your coding task"
 
@@ -290,5 +308,6 @@ Commands:
   ai-rules debug select [--budget 800] "task"
   ai-rules debug init
   ai-rules debug install opencode [--repo|--global] [--name airules] [--force]
+  ai-rules debug install pi [--repo|--global] [--force]
 `);
 }

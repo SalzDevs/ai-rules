@@ -51,6 +51,7 @@ test("setup creates folders, starter rules, and OpenCode integration", async () 
 
   assert.ok(result.starterRules.length >= 3);
   assert.match(result.integrations.join("\n"), /OpenCode \/airules command/);
+  assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
   await fs.access(path.join(root, ".ai-rules", "rules", "ts.react.no-inline-fetch.md"));
 });
 
