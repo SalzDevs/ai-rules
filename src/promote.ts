@@ -11,6 +11,7 @@ interface PromoteOptions {
   comment?: string;
   layer?: RuleLayer;
   printDraftPrompt?: boolean;
+  yes?: boolean;
 }
 
 const taskKinds: TaskKind[] = ["feature", "fix", "refactor", "test", "docs", "review", "chore"];
@@ -27,7 +28,27 @@ export async function promoteRule(options: PromoteOptions): Promise<string> {
   }
 
   const draft = draftFromComment(comment);
-  const layer = options.layer ?? (await askChoice("Where should this rule live?", ["personal", "repo"], "personal")) as RuleLayer;
+
+  if (options.yes) {
+    const layer = options.layer ?? (await defaultLayer(options.cwd));
+    return savePromotedRule(options.cwd, {
+      id: draft.id,
+      layer,
+      severity: draft.severity,
+      languages: draft.languages,
+      frameworks: draft.frameworks,
+      globs: draft.globs,
+      taskKinds: draft.taskKinds,
+      keywords: draft.keywords,
+      trigger: draft.trigger,
+      rule: draft.rule,
+      prefer: draft.prefer,
+      rationale: draft.rationale,
+      example: "",
+    });
+  }
+
+  const layer = options.layer ?? (await askChoice("Where should this rule live?", ["personal", "repo"], "repo")) as RuleLayer;
   const id = await ask("Rule id", draft.id);
   const severity = (await askChoice("Severity", ["low", "medium", "high"], draft.severity)) as Severity;
   const languages = splitCsv(await ask("Languages, comma-separated", draft.languages.join(", ")));
@@ -43,27 +64,62 @@ export async function promoteRule(options: PromoteOptions): Promise<string> {
   const rationale = await ask("Rationale", draft.rationale);
   const example = await ask("Example, optional", "");
 
-  const baseDir = layer === "repo" ? repoRulesDir(options.cwd) : defaultPersonalRulesDir();
+  return savePromotedRule(options.cwd, {
+    id,
+    layer,
+    severity,
+    languages,
+    frameworks,
+    globs,
+    taskKinds: selectedTaskKinds,
+    keywords,
+    trigger,
+    rule,
+    prefer,
+    rationale,
+    example,
+  });
+}
+
+interface SavedRuleInput {
+  id: string;
+  layer: RuleLayer;
+  severity: Severity;
+  languages: string[];
+  frameworks: string[];
+  globs: string[];
+  taskKinds: TaskKind[];
+  keywords: string[];
+  trigger: string;
+  rule: string;
+  prefer: string;
+  rationale: string;
+  example: string;
+}
+
+async function savePromotedRule(cwd: string, input: SavedRuleInput): Promise<string> {
+
+  const baseDir = input.layer === "repo" ? repoRulesDir(cwd) : defaultPersonalRulesDir();
   const rulesDir = rulesSubdir(baseDir);
   await ensureDir(rulesDir);
 
-  const filePath = await uniqueRulePath(rulesDir, id);
+  const filePath = await uniqueRulePath(rulesDir, input.id);
   const frontmatter = YAML.stringify({
-    id,
+    id: input.id,
     status: "active",
-    layer,
-    severity,
+    layer: input.layer,
+    severity: input.severity,
     scope: {
-      languages,
-      frameworks,
-      globs,
-      taskKinds: selectedTaskKinds,
+      languages: input.languages,
+      frameworks: input.frameworks,
+      globs: input.globs,
+      taskKinds: input.taskKinds,
     },
     triggers: {
-      keywords,
+      keywords: input.keywords,
     },
     conflictsWith: [],
-    includeExample: example ? "when-needed" : "never",
+    includeExample: input.example ? "when-needed" : "never",
     createdAt: new Date().toISOString(),
   });
 
@@ -73,24 +129,33 @@ export async function promoteRule(options: PromoteOptions): Promise<string> {
     "---",
     "",
     "## Trigger",
-    trigger,
+    input.trigger,
     "",
     "## Rule",
-    rule,
+    input.rule,
     "",
     "## Prefer",
-    prefer,
+    input.prefer,
     "",
     "## Rationale",
-    rationale,
+    input.rationale,
     "",
     "## Example",
-    example,
+    input.example,
     "",
   ].join("\n");
 
   await fs.writeFile(filePath, body, "utf8");
   return filePath;
+}
+
+async function defaultLayer(cwd: string): Promise<RuleLayer> {
+  try {
+    await fs.access(path.join(cwd, ".git"));
+    return "repo";
+  } catch {
+    return "personal";
+  }
 }
 
 function draftFromComment(comment: string) {

@@ -1,28 +1,15 @@
-import { prepareTask } from "./run.js";
-import { closePrompts } from "./prompt.js";
-import { launchTool, type ToolName } from "./tool-adapters.js";
+import { runTask } from "./run-task.js";
+import type { ToolName } from "./tool-adapters.js";
 
 export async function runWrapper(tool: ToolName, argv: string[], cwd = process.cwd()): Promise<number> {
   const { task, dryRun, budget } = parseWrapperArgs(argv);
-  if (!task) {
-    console.error(`A task is required. Example: smart-${tool} "implement the feature"`);
-    return 1;
-  }
-
-  try {
-    const prepared = await prepareTask(task, cwd, budget, true);
-    if (dryRun) {
-      console.log(prepared.prompt);
-      return 0;
-    }
-
-    return await launchTool(tool, prepared.prompt);
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    return 1;
-  } finally {
-    closePrompts();
-  }
+  return runTask({
+    task,
+    cwd,
+    tool,
+    dryRun,
+    budget,
+  });
 }
 
 function parseWrapperArgs(argv: string[]): { task: string; dryRun: boolean; budget: number } {

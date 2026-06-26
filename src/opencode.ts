@@ -45,7 +45,7 @@ export function renderOpenCodeCommand(options: { aiRulesCommand: string; budget:
     "description: Run a task with ai-rules selected coding instructions",
     "---",
     "",
-    "!`cat <<'AI_RULES_TASK' | " + options.aiRulesCommand + ` compile --budget ${options.budget} --no-resolve-conflicts`,
+    "!`cat <<'AI_RULES_TASK' | " + options.aiRulesCommand + ` debug compile --budget ${options.budget} --no-resolve-conflicts`,
     "$ARGUMENTS",
     "AI_RULES_TASK`",
     "",
