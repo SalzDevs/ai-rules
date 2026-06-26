@@ -4,9 +4,18 @@
 
 ## Quick start
 
+No install required:
+
+```sh
+cd your-project
+npx ai-rules setup
+npx ai-rules run "Implement data loading in src/components/UserCard.tsx"
+```
+
+Or install globally once:
+
 ```sh
 npm install -g ai-rules
-cd your-project
 ai-rules setup
 ai-rules run "Implement data loading in src/components/UserCard.tsx"
 ```
@@ -14,7 +23,7 @@ ai-rules run "Implement data loading in src/components/UserCard.tsx"
 Or in OpenCode:
 
 ```sh
-ai-rules setup
+npx ai-rules setup
 opencode
 /airules Implement data loading in src/components/UserCard.tsx
 ```
@@ -41,7 +50,7 @@ ai-rules "your coding task"
 - creates personal and repo rule folders
 - adds starter example rules if the repo has none yet
 - detects installed coding tools
-- installs the native OpenCode `/airules` command when OpenCode is available
+- installs the native OpenCode `/airules` command
 
 Optional flags:
 
@@ -87,3 +96,18 @@ smart-pi "task"
 - Personal conflict overrides: `~/.config/ai-rules/overrides.yaml`
 
 Rules are Markdown files with YAML frontmatter and `Trigger`, `Rule`, `Prefer`, `Rationale`, and optional `Example` sections.
+
+## Publish / develop
+
+```sh
+npm test
+npm run build
+npm pack
+npx ./ai-rules-0.2.0.tgz setup
+```
+
+To publish:
+
+```sh
+npm publish
+```

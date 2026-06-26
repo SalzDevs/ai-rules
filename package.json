@@ -1,8 +1,14 @@
 {
   "name": "ai-rules",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Local-first, tool-agnostic AI coding instruction selector and wrapper.",
   "type": "module",
+  "main": "./dist/bin/ai-rules.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "ai-rules": "./dist/bin/ai-rules.js",
     "smart-codex": "./dist/bin/smart-codex.js",
@@ -12,14 +18,27 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run build",
     "test": "node --import tsx --test test/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SalzDevs/ai-rules.git"
+  },
+  "homepage": "https://github.com/SalzDevs/ai-rules#readme",
+  "bugs": {
+    "url": "https://github.com/SalzDevs/ai-rules/issues"
   },
   "keywords": [
     "ai",
     "coding-agent",
     "rules",
-    "prompt"
+    "prompt",
+    "opencode",
+    "claude",
+    "codex"
   ],
   "license": "MIT",
   "dependencies": {

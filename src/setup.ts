@@ -1,4 +1,5 @@
 import path from "node:path";
+import { resolveAiRulesCommand } from "./bin-path.js";
 import { pathExists } from "./file-system.js";
 import { installOpenCodeCommand, type OpenCodeInstallScope } from "./opencode.js";
 import { defaultPersonalRulesDir, defaultOpenCodeConfigDir, repoRulesDir, rulesSubdir } from "./paths.js";
@@ -43,6 +44,7 @@ export async function runSetup(options: SetupOptions): Promise<SetupResult> {
       commandName: "airules",
       budget: 800,
       force: options.force,
+      aiRulesCommand: await resolveAiRulesCommand(),
     });
     integrations.push(`OpenCode /airules command -> ${commandPath}`);
   }

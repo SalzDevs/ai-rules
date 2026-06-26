@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { resolveAiRulesCommand } from "./bin-path.js";
 import { pathExists } from "./file-system.js";
 import { defaultOpenCodeConfigDir } from "./paths.js";
 import { ensureDir } from "./preflight.js";
@@ -30,7 +31,7 @@ export async function installOpenCodeCommand(options: InstallOpenCodeOptions): P
   await fs.writeFile(
     commandPath,
     renderOpenCodeCommand({
-      aiRulesCommand: options.aiRulesCommand ?? detectAiRulesCommand(),
+      aiRulesCommand: options.aiRulesCommand ?? (await resolveAiRulesCommand()),
       budget: options.budget,
     }),
     "utf8",
@@ -55,15 +56,6 @@ export function renderOpenCodeCommand(options: { aiRulesCommand: string; budget:
   ].join("\n");
 }
 
-function detectAiRulesCommand(): string {
-  const invokedPath = process.argv[1];
-  if (invokedPath && path.basename(invokedPath).startsWith("ai-rules")) {
-    return `${shellQuote(process.execPath)} ${shellQuote(path.resolve(invokedPath))}`;
-  }
-
-  return "ai-rules";
-}
-
 function sanitizeCommandName(commandName: string): string {
   const sanitized = commandName.trim().replace(/^\//, "").replace(/[^a-zA-Z0-9._-]/g, "-");
   if (!sanitized) {
@@ -73,6 +65,3 @@ function sanitizeCommandName(commandName: string): string {
   return sanitized;
 }
 
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
-}

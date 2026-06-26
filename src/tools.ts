@@ -25,12 +25,17 @@ export function resolveToolCommand(tool: ToolName): string {
 }
 
 export async function commandExists(command: string): Promise<boolean> {
+  return (await resolveCommandPath(command)) !== undefined;
+}
+
+export async function resolveCommandPath(command: string): Promise<string | undefined> {
   const binary = command.split(/\s+/)[0];
   try {
-    await execFileAsync("which", [binary]);
-    return true;
+    const { stdout } = await execFileAsync("which", [binary]);
+    const resolved = stdout.trim();
+    return resolved.length > 0 ? resolved : undefined;
   } catch {
-    return false;
+    return undefined;
   }
 }
 
