@@ -41,7 +41,6 @@ pi
 ```sh
 ai-rules setup
 ai-rules run "your coding task"
-ai-rules promote --yes "review comment to keep"
 ai-rules doctor
 ```
 
@@ -68,16 +67,6 @@ ai-rules setup --global
 ai-rules setup --with-examples
 ai-rules setup --force
 ```
-
-## Promote review feedback
-
-Turn a review comment into a reusable rule:
-
-```sh
-ai-rules promote --yes "React components should not fetch directly; use the project data hook instead"
-```
-
-Use `--repo` or `--personal` to override the default save location.
 
 ## Advanced / debug
 

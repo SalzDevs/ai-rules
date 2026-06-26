@@ -30,7 +30,7 @@ export async function runDoctor(cwd: string): Promise<DoctorResult> {
   checks.push({
     name: "repo rule count",
     status: ruleCount > 0 ? "ok" : "warn",
-    detail: ruleCount > 0 ? `${ruleCount} active repo rules` : 'No repo rules yet. Run ai-rules promote --yes "..."',
+    detail: ruleCount > 0 ? `${ruleCount} active repo rules` : "No repo rules yet. Add Markdown files to .ai-rules/rules/",
   });
 
   const tools = await detectAvailableTools();

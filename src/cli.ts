@@ -5,13 +5,11 @@ import { getIntegration } from "./integrations/registry.js";
 import type { IntegrationInstallScope } from "./integrations/types.js";
 import { ensureDir } from "./preflight.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
-import { promoteRule } from "./promote.js";
 import { closePrompts, readStdinIfAvailable } from "./prompt.js";
 import { prepareTask } from "./run.js";
 import { runTask } from "./run-task.js";
 import { formatSetupSummary, runSetup } from "./setup.js";
 import { selectForTask } from "./selector.js";
-import type { RuleLayer } from "./types.js";
 
 interface ParsedArgs {
   command: string;
@@ -20,21 +18,16 @@ interface ParsedArgs {
 }
 
 const booleanFlags = new Set([
-  "repo",
-  "personal",
   "global",
   "force",
-  "draft-prompt",
   "no-resolve-conflicts",
   "with-examples",
-  "yes",
   "dry-run",
 ]);
 
 const knownCommands = new Set([
   "setup",
   "run",
-  "promote",
   "doctor",
   "debug",
   "help",
@@ -53,8 +46,6 @@ export async function runAiRulesCli(argv: string[], cwd = process.cwd()): Promis
         return handleSetup(parsed, cwd);
       case "run":
         return handleRun(parsed, cwd);
-      case "promote":
-        return handlePromote(parsed, cwd);
       case "doctor":
         return handleDoctor(cwd);
       case "debug":
@@ -109,24 +100,6 @@ async function handleRun(parsed: ParsedArgs, cwd: string): Promise<number> {
     dryRun: Boolean(parsed.flags.get("dry-run")),
     budget: readBudget(parsed),
   });
-}
-
-async function handlePromote(parsed: ParsedArgs, cwd: string): Promise<number> {
-  const filePath = await promoteRule({
-    cwd,
-    comment: parsed.positional.join(" "),
-    layer: readLayer(parsed),
-    printDraftPrompt: Boolean(parsed.flags.get("draft-prompt")),
-    yes: Boolean(parsed.flags.get("yes")),
-  });
-
-  if (Boolean(parsed.flags.get("draft-prompt"))) {
-    console.log(filePath);
-  } else {
-    console.log(`Saved rule: ${filePath}`);
-  }
-
-  return 0;
 }
 
 async function handleDoctor(cwd: string): Promise<number> {
@@ -237,16 +210,6 @@ function readBudget(parsed: ParsedArgs): number {
   return typeof raw === "string" ? parseTokenBudget(raw) : DEFAULT_TOKEN_BUDGET;
 }
 
-function readLayer(parsed: ParsedArgs): RuleLayer | undefined {
-  if (parsed.flags.has("repo")) {
-    return "repo";
-  }
-  if (parsed.flags.has("personal")) {
-    return "personal";
-  }
-  return undefined;
-}
-
 function readInstallScope(parsed: ParsedArgs): IntegrationInstallScope {
   return parsed.flags.has("global") ? "global" : "repo";
 }
@@ -267,7 +230,6 @@ function printHelp(): void {
 Getting started:
   ai-rules setup
   ai-rules run "your coding task"
-  ai-rules promote --yes "review comment to keep"
   ai-rules doctor
 
 OpenCode:

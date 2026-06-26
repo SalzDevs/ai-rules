@@ -85,7 +85,6 @@ export function formatSetupSummary(result: SetupResult): string {
     '1. ai-rules run "your coding task"',
     "2. In OpenCode: /airules your coding task",
     "3. In Pi: /airules your coding task",
-    '4. ai-rules promote --yes "review comment to keep"',
   );
 
   return lines.join("\n");

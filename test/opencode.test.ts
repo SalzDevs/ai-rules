@@ -5,7 +5,6 @@ import path from "node:path";
 import test from "node:test";
 import { runAiRulesCli } from "../src/cli.js";
 import { installOpenCodeCommand, renderOpenCodeCommand } from "../src/opencode.js";
-import { promoteRule } from "../src/promote.js";
 import { runSetup } from "../src/setup.js";
 import { resolveTool } from "../src/tools.js";
 
@@ -53,22 +52,6 @@ test("setup creates folders, starter rules, and OpenCode integration", async () 
   assert.match(result.integrations.join("\n"), /OpenCode \/airules command/);
   assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
   await fs.access(path.join(root, ".ai-rules", "rules", "ts.react.no-inline-fetch.md"));
-});
-
-test("promote --yes saves a rule without prompts", async () => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-promote-"));
-  process.env.XDG_CONFIG_HOME = path.join(root, ".config");
-  await fs.mkdir(path.join(root, ".git"));
-
-  const filePath = await promoteRule({
-    cwd: root,
-    comment: "React components should not fetch directly",
-    yes: true,
-  });
-
-  const content = await fs.readFile(filePath, "utf8");
-  assert.match(content, /React components should not fetch directly/);
-  assert.match(filePath, /\.ai-rules\/rules\//);
 });
 
 test("bare task argument is treated as run with dry-run", async () => {
