@@ -2,15 +2,18 @@ import path from "node:path";
 import { buildIntegrationCompileShell } from "../compile-contract.js";
 import { pathExists } from "../file-system.js";
 import { defaultPiAgentDir } from "../paths.js";
+import { renderCreateRulePrompt } from "./create-rule-prompt.js";
 import { installIntegrationFile } from "./install.js";
 import type { AgentIntegration, IntegrationInstallContext } from "./types.js";
 
 export function renderPiExtension(options: { aiRulesCommand: string; budget: number }): string {
   const compileShell = buildIntegrationCompileShell(options.aiRulesCommand, options.budget);
+  const createRulePrompt = renderCreateRulePrompt();
 
   return `import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const COMPILE_SHELL = ${JSON.stringify(compileShell)};
+const CREATE_RULE_PROMPT = ${JSON.stringify(createRulePrompt)};
 
 export default function (pi: ExtensionAPI) {
   pi.registerCommand("airules", {
@@ -41,6 +44,15 @@ export default function (pi: ExtensionAPI) {
       }
     },
   });
+
+  pi.registerCommand("create-rule", {
+    description: "Interview and create a personal ai-rules rule",
+    handler: async (args, ctx) => {
+      const seed = args.trim();
+      const prompt = seed ? \`\${CREATE_RULE_PROMPT}\\n\\n## Seed from user\\n\${seed}\` : CREATE_RULE_PROMPT;
+      await ctx.sendUserMessage(prompt);
+    },
+  });
 }
 `;
 }
@@ -55,7 +67,7 @@ function installedExtensionPath(cwd: string, global: boolean): string {
 
 export const piIntegration: AgentIntegration = {
   id: "pi",
-  setupLabel: "Pi /airules extension",
+  setupLabel: "Pi /airules and /create-rule extension",
   doctorName: "Pi integration",
   relatedTool: "pi",
 

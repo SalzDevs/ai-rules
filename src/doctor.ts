@@ -26,7 +26,7 @@ export async function runDoctor(_cwd: string): Promise<DoctorResult> {
     detail:
       ruleCount > 0
         ? `${ruleCount} active rules`
-        : `No active rules yet. Add Markdown files to ${personalRules}.`,
+        : `No active rules yet. Run /create-rule in Pi or OpenCode, or add Markdown files to ${personalRules}.`,
   });
 
   const tools = await detectAvailableTools();
@@ -53,7 +53,7 @@ export async function runDoctor(_cwd: string): Promise<DoctorResult> {
       checks.push({
         name: integration.doctorName,
         status: "warn",
-        detail: `${integration.relatedTool} is installed but /airules is missing. Run \`ai-rules setup\`.`,
+        detail: `${integration.relatedTool} is installed but ai-rules commands are missing. Run \`ai-rules setup\`.`,
       });
     }
   }

@@ -23,18 +23,20 @@ test("renders an OpenCode command that injects ai-rules debug compile output", (
 
 test("installs a repo-local OpenCode slash command", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-opencode-"));
-  const commandPath = await installOpenCodeCommand({
+  const installedPaths = (await installOpenCodeCommand({
     cwd: root,
     scope: "repo",
     commandName: "airules",
     budget: 800,
     force: false,
     aiRulesCommand: "ai-rules",
-  });
+  })).split("\n");
+  const commandPath = installedPaths[0];
   const command = await fs.readFile(commandPath, "utf8");
 
   assert.equal(commandPath, path.join(root, ".opencode", "commands", "airules.md"));
   assert.match(command, /ai-rules debug compile --budget 800 --no-resolve-conflicts/);
+  await fs.access(path.join(root, ".opencode", "commands", "create-rule.md"));
 });
 
 test("setup creates personal rule folder and integrations", async () => {
@@ -48,8 +50,9 @@ test("setup creates personal rule folder and integrations", async () => {
     force: false,
   });
 
-  assert.match(result.integrations.join("\n"), /OpenCode \/airules command/);
-  assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
+  assert.match(result.integrations.join("\n"), /OpenCode \/airules and \/create-rule/);
+  assert.match(result.integrations.join("\n"), /Pi \/airules and \/create-rule/);
+  await fs.access(path.join(root, ".opencode", "commands", "create-rule.md"));
   assert.equal(result.personalRulesDir, rulesSubdir(defaultPersonalRulesDir()));
   const ruleEntries = await fs.readdir(result.personalRulesDir);
   assert.equal(ruleEntries.length, 0);

@@ -2,6 +2,7 @@ import path from "node:path";
 import { buildIntegrationCompileInvocation } from "../compile-contract.js";
 import { pathExists } from "../file-system.js";
 import { defaultOpenCodeConfigDir } from "../paths.js";
+import { renderOpenCodeCreateRuleCommand } from "./create-rule-prompt.js";
 import { installIntegrationFile } from "./install.js";
 import type { AgentIntegration, IntegrationInstallContext } from "./types.js";
 
@@ -27,7 +28,7 @@ function commandDir(cwd: string, scope: IntegrationInstallContext["scope"]): str
   return scope === "repo" ? path.join(cwd, ".opencode", "commands") : path.join(defaultOpenCodeConfigDir(), "commands");
 }
 
-function installedCommandPath(cwd: string, global: boolean): string {
+function installedAirulesPath(cwd: string, global: boolean): string {
   return global
     ? path.join(defaultOpenCodeConfigDir(), "commands", "airules.md")
     : path.join(cwd, ".opencode", "commands", "airules.md");
@@ -44,25 +45,33 @@ function sanitizeCommandName(commandName: string): string {
 
 export const opencodeIntegration: AgentIntegration = {
   id: "opencode",
-  setupLabel: "OpenCode /airules command",
+  setupLabel: "OpenCode /airules and /create-rule commands",
   doctorName: "OpenCode integration",
   relatedTool: "opencode",
 
   async install(context) {
-    const filename = `${sanitizeCommandName(context.commandName ?? "airules")}.md`;
-    return installIntegrationFile({
-      targetDir: commandDir(context.cwd, context.scope),
-      filename,
+    const targetDir = commandDir(context.cwd, context.scope);
+    const airulesPath = await installIntegrationFile({
+      targetDir,
+      filename: `${sanitizeCommandName(context.commandName ?? "airules")}.md`,
       content: renderOpenCodeCommand({
         aiRulesCommand: context.aiRulesCommand,
         budget: context.budget,
       }),
       force: context.force,
     });
+    const createRulePath = await installIntegrationFile({
+      targetDir,
+      filename: "create-rule.md",
+      content: renderOpenCodeCreateRuleCommand(),
+      force: context.force,
+    });
+
+    return `${airulesPath}\n${createRulePath}`;
   },
 
   async findInstalled(cwd, global) {
-    const commandPath = installedCommandPath(cwd, global);
+    const commandPath = installedAirulesPath(cwd, global);
     return (await pathExists(commandPath)) ? commandPath : undefined;
   },
 };

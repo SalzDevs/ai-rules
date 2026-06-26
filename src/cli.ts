@@ -232,11 +232,13 @@ Getting started:
 OpenCode:
   ai-rules setup
   opencode
+  /create-rule
   /airules your coding task
 
 Pi:
   ai-rules setup
   pi
+  /create-rule
   /airules your coding task
 
 Shortcuts:

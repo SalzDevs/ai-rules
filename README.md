@@ -25,6 +25,7 @@ Or in OpenCode:
 ```sh
 npx ai-rules setup
 opencode
+/create-rule
 /airules Implement data loading in src/components/UserCard.tsx
 ```
 
@@ -33,6 +34,7 @@ Or in Pi:
 ```sh
 npx ai-rules setup
 pi
+/create-rule
 /airules Implement data loading in src/components/UserCard.tsx
 ```
 
@@ -56,8 +58,8 @@ ai-rules "your coding task"
 
 - creates your personal rule folder
 - detects installed coding tools
-- installs the native OpenCode `/airules` command
-- installs the native Pi `/airules` extension
+- installs the native OpenCode `/airules` and `/create-rule` commands
+- installs the native Pi `/airules` and `/create-rule` extension
 
 Optional flags:
 
@@ -66,7 +68,14 @@ ai-rules setup --global
 ai-rules setup --force
 ```
 
-Add your own rules as Markdown files in `~/.config/ai-rules/rules/` before running tasks.
+Create your first rule in Pi or OpenCode:
+
+```sh
+/create-rule
+/create-rule no fetch directly inside React components
+```
+
+Then run tasks with `/airules` or `ai-rules run "your task"`.
 
 ## Advanced / debug
 

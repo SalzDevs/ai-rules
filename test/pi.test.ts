@@ -17,6 +17,7 @@ test("renders a Pi extension that registers /airules", () => {
   assert.match(extension, /Run a task with ai-rules selected coding instructions/);
   assert.match(extension, /COMPILE_SHELL = "ai-rules debug compile --budget 500 --no-resolve-conflicts/);
   assert.match(extension, /\$@/);
+  assert.match(extension, /pi\.registerCommand\("create-rule"/);
   assert.match(extension, /ctx\.sendUserMessage/);
 });
 
@@ -46,8 +47,8 @@ test("setup installs Pi integration alongside OpenCode", async () => {
     force: false,
   });
 
-  assert.match(result.integrations.join("\n"), /OpenCode \/airules command/);
-  assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
+  assert.match(result.integrations.join("\n"), /OpenCode \/airules and \/create-rule/);
+  assert.match(result.integrations.join("\n"), /Pi \/airules and \/create-rule/);
   await fs.access(path.join(root, ".pi", "extensions", "ai-rules.ts"));
 });
 
@@ -72,5 +73,5 @@ test("setup --tool pi installs only Pi integration", async () => {
   });
 
   assert.doesNotMatch(result.integrations.join("\n"), /OpenCode/);
-  assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
+  assert.match(result.integrations.join("\n"), /Pi \/airules and \/create-rule/);
 });

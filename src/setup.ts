@@ -67,7 +67,7 @@ export function formatSetupSummary(result: SetupResult): string {
   lines.push(
     "",
     "Next steps:",
-    "1. Add rule Markdown files to the folder above",
+    "1. In Pi or OpenCode: /create-rule (optionally add a short seed, e.g. /create-rule no fetch in React components)",
     '2. ai-rules run "your coding task"',
     "3. In OpenCode: /airules your coding task",
     "4. In Pi: /airules your coding task",
