@@ -1,7 +1,7 @@
 import { DEFAULT_TOKEN_BUDGET } from "./compile-contract.js";
 import { prepareTask } from "./run.js";
 import { closePrompts } from "./prompt.js";
-import { launchTool, resolveTool, type ToolName } from "./tools.js";
+import { launchTool, resolveTool, detectAvailableTools, type ToolName } from "./tools.js";
 
 export interface RunTaskOptions {
   task: string;
@@ -19,14 +19,15 @@ export async function runTask(options: RunTaskOptions): Promise<number> {
   }
 
   try {
-    const tool = await resolveTool(options.tool);
     const prepared = await prepareTask(task, cwd, budget, true);
 
     if (dryRun) {
+      const tool = await resolveToolForDryRun(options.tool);
       console.log(formatDryRunOutput(tool, prepared.prompt));
       return 0;
     }
 
+    const tool = await resolveTool(options.tool);
     return await launchTool(tool, prepared.prompt);
   } finally {
     closePrompts();
@@ -35,4 +36,13 @@ export async function runTask(options: RunTaskOptions): Promise<number> {
 
 function formatDryRunOutput(tool: ToolName, prompt: string): string {
   return [`Tool: ${tool}`, "", prompt].join("\n");
+}
+
+async function resolveToolForDryRun(explicit?: string): Promise<ToolName> {
+  if (explicit) {
+    return resolveTool(explicit);
+  }
+
+  const available = await detectAvailableTools();
+  return available[0] ?? "opencode";
 }
