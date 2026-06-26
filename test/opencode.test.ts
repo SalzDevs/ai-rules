@@ -73,7 +73,7 @@ test("bare task argument is treated as run with dry-run when rules exist", async
   process.env.XDG_CONFIG_HOME = path.join(root, ".config");
   await fs.mkdir(path.join(root, ".git"));
   await runSetup({ cwd: root, global: false, force: false });
-  await writeMinimalRule(root);
+  await writeMinimalRule(path.join(root, ".config"));
 
   const code = await runAiRulesCli(["Implement a TypeScript feature", "--dry-run"], root);
   assert.equal(code, 0);
@@ -83,8 +83,10 @@ test("resolveTool rejects unknown explicit tool", async () => {
   await assert.rejects(() => resolveTool("unknown-tool"), /Unknown tool/);
 });
 
-async function writeMinimalRule(_cwd: string): Promise<void> {
-  const file = path.join(rulesSubdir(defaultPersonalRulesDir()), "general.minimal-diff.md");
+async function writeMinimalRule(configHome: string): Promise<void> {
+  const rulesDir = rulesSubdir(path.join(configHome, "ai-rules"));
+  await fs.mkdir(rulesDir, { recursive: true });
+  const file = path.join(rulesDir, "general.minimal-diff.md");
   await fs.writeFile(
     file,
     `---
