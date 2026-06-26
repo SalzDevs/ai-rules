@@ -4,7 +4,6 @@ import { selectIntegrations } from "./integrations/registry.js";
 import type { IntegrationInstallScope } from "./integrations/types.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
 import { ensureDir } from "./preflight.js";
-import { countRepoRules, installStarterRules } from "./starter-rules.js";
 import { detectAvailableTools } from "./tools.js";
 
 export type { IntegrationInstallScope } from "./integrations/types.js";
@@ -12,7 +11,6 @@ export type { IntegrationInstallScope } from "./integrations/types.js";
 export interface SetupOptions {
   cwd: string;
   global: boolean;
-  withExamples: boolean;
   force: boolean;
   tool?: string;
 }
@@ -21,7 +19,6 @@ export interface SetupResult {
   personalRulesDir: string;
   repoRulesDir: string;
   availableTools: string[];
-  starterRules: string[];
   integrations: string[];
 }
 
@@ -34,8 +31,6 @@ export async function runSetup(options: SetupOptions): Promise<SetupResult> {
 
   const availableTools = await detectAvailableTools();
   const integrations: string[] = [];
-  const shouldInstallExamples = options.withExamples || (await countRepoRules(options.cwd)) === 0;
-  const starterRules = shouldInstallExamples ? await installStarterRules(options.cwd, options.force) : [];
   const scope: IntegrationInstallScope = options.global ? "global" : "repo";
   const aiRulesCommand = await resolveAiRulesCommand();
 
@@ -55,7 +50,6 @@ export async function runSetup(options: SetupOptions): Promise<SetupResult> {
     personalRulesDir,
     repoRulesDir: repoRules,
     availableTools,
-    starterRules,
     integrations,
   };
 }
@@ -71,10 +65,6 @@ export function formatSetupSummary(result: SetupResult): string {
     `Detected tools: ${result.availableTools.length > 0 ? result.availableTools.join(", ") : "none"}`,
   ];
 
-  if (result.starterRules.length > 0) {
-    lines.push("", "Starter rules:", ...result.starterRules.map((file) => `- ${file}`));
-  }
-
   if (result.integrations.length > 0) {
     lines.push("", "Integrations:", ...result.integrations.map((item) => `- ${item}`));
   }
@@ -82,9 +72,10 @@ export function formatSetupSummary(result: SetupResult): string {
   lines.push(
     "",
     "Next steps:",
-    '1. ai-rules run "your coding task"',
-    "2. In OpenCode: /airules your coding task",
-    "3. In Pi: /airules your coding task",
+    "1. Add rule Markdown files to the folders above",
+    '2. ai-rules run "your coding task"',
+    "3. In OpenCode: /airules your coding task",
+    "4. In Pi: /airules your coding task",
   );
 
   return lines.join("\n");

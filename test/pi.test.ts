@@ -43,7 +43,6 @@ test("setup installs Pi integration alongside OpenCode", async () => {
   const result = await runSetup({
     cwd: root,
     global: false,
-    withExamples: false,
     force: false,
   });
 
@@ -68,7 +67,6 @@ test("setup --tool pi installs only Pi integration", async () => {
   const result = await runSetup({
     cwd: root,
     global: false,
-    withExamples: false,
     force: false,
     tool: "pi",
   });

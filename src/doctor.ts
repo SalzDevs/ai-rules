@@ -1,7 +1,7 @@
 import { agentIntegrations } from "./integrations/registry.js";
 import { defaultPersonalRulesDir, repoRulesDir, rulesSubdir } from "./paths.js";
 import { pathExists } from "./file-system.js";
-import { countRepoRules } from "./starter-rules.js";
+import { countActiveRules } from "./rule-files.js";
 import { detectAvailableTools } from "./tools.js";
 
 export interface DoctorResult {
@@ -26,11 +26,14 @@ export async function runDoctor(cwd: string): Promise<DoctorResult> {
     checks.push({ name: "repo rules", status: "warn", detail: "Missing. Run `ai-rules setup`." });
   }
 
-  const ruleCount = await countRepoRules(cwd);
+  const ruleCount = await countActiveRules(cwd);
   checks.push({
-    name: "repo rule count",
+    name: "rule count",
     status: ruleCount > 0 ? "ok" : "warn",
-    detail: ruleCount > 0 ? `${ruleCount} active repo rules` : "No repo rules yet. Add Markdown files to .ai-rules/rules/",
+    detail:
+      ruleCount > 0
+        ? `${ruleCount} active rules`
+        : "No active rules yet. Add Markdown files to .ai-rules/rules/ or ~/.config/ai-rules/rules/",
   });
 
   const tools = await detectAvailableTools();

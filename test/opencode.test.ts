@@ -36,7 +36,7 @@ test("installs a repo-local OpenCode slash command", async () => {
   assert.match(command, /ai-rules debug compile --budget 800 --no-resolve-conflicts/);
 });
 
-test("setup creates folders, starter rules, and OpenCode integration", async () => {
+test("setup creates rule folders and integrations", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-setup-"));
   process.env.XDG_CONFIG_HOME = path.join(root, ".config");
   await fs.mkdir(path.join(root, ".git"));
@@ -44,20 +44,32 @@ test("setup creates folders, starter rules, and OpenCode integration", async () 
   const result = await runSetup({
     cwd: root,
     global: false,
-    withExamples: true,
     force: false,
   });
 
-  assert.ok(result.starterRules.length >= 3);
   assert.match(result.integrations.join("\n"), /OpenCode \/airules command/);
   assert.match(result.integrations.join("\n"), /Pi \/airules extension/);
-  await fs.access(path.join(root, ".ai-rules", "rules", "ts.react.no-inline-fetch.md"));
+  await fs.access(path.join(root, ".ai-rules", "rules"));
+  const ruleEntries = await fs.readdir(path.join(root, ".ai-rules", "rules"));
+  assert.equal(ruleEntries.length, 0);
 });
 
-test("bare task argument is treated as run with dry-run", async () => {
+test("run fails when no rules exist", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-cli-"));
   process.env.XDG_CONFIG_HOME = path.join(root, ".config");
   await fs.mkdir(path.join(root, ".git"));
+  await runSetup({ cwd: root, global: false, force: false });
+
+  const code = await runAiRulesCli(["run", "Implement a TypeScript feature", "--dry-run"], root);
+  assert.equal(code, 1);
+});
+
+test("bare task argument is treated as run with dry-run when rules exist", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-rules-cli-"));
+  process.env.XDG_CONFIG_HOME = path.join(root, ".config");
+  await fs.mkdir(path.join(root, ".git"));
+  await runSetup({ cwd: root, global: false, force: false });
+  await writeMinimalRule(root);
 
   const code = await runAiRulesCli(["Implement a TypeScript feature", "--dry-run"], root);
   assert.equal(code, 0);
@@ -66,3 +78,42 @@ test("bare task argument is treated as run with dry-run", async () => {
 test("resolveTool rejects unknown explicit tool", async () => {
   await assert.rejects(() => resolveTool("unknown-tool"), /Unknown tool/);
 });
+
+async function writeMinimalRule(cwd: string): Promise<void> {
+  const file = path.join(cwd, ".ai-rules", "rules", "general.minimal-diff.md");
+  await fs.writeFile(
+    file,
+    `---
+id: general.minimal-diff
+status: active
+layer: repo
+severity: medium
+scope:
+  languages: []
+  frameworks: []
+  globs: ["**/*"]
+  taskKinds: [feature]
+triggers:
+  keywords: [implement]
+conflictsWith: []
+includeExample: never
+---
+
+## Trigger
+When making requested code changes.
+
+## Rule
+Keep the diff focused on the requested task.
+
+## Prefer
+Avoid unrelated refactors unless explicitly requested.
+
+## Rationale
+Smaller diffs are easier to review.
+
+## Example
+
+`,
+    "utf8",
+  );
+}

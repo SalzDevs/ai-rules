@@ -14,6 +14,18 @@ export async function loadRules(cwd: string): Promise<Rule[]> {
   return [...personal, ...repo].filter((rule) => rule.metadata.status === "active");
 }
 
+export async function countActiveRules(cwd: string): Promise<number> {
+  return (await loadRules(cwd)).length;
+}
+
+export async function assertRulesExist(cwd: string): Promise<void> {
+  if ((await countActiveRules(cwd)) === 0) {
+    throw new Error(
+      "No active rules found. Add Markdown rule files to .ai-rules/rules/ or ~/.config/ai-rules/rules/.",
+    );
+  }
+}
+
 export async function loadOverrides(cwd: string): Promise<ConflictOverride[]> {
   const files = [overridesFile(defaultPersonalRulesDir()), overridesFile(repoRulesDir(cwd))];
   const overrides: ConflictOverride[] = [];

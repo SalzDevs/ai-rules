@@ -4,19 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { compileRulePack } from "../src/compiler.js";
+import { prepareTask } from "../src/run.js";
 import { selectForTask } from "../src/selector.js";
 
-test("empty rule library compiles only the tiny core", async () => {
+test("prepareTask fails when no rules exist", async () => {
   const fixture = await createFixture();
-  const result = await selectForTask({
-    task: "Implement a small TypeScript feature",
-    cwd: fixture.cwd,
-    tokenBudget: 800,
-  });
-  const pack = compileRulePack(result);
-
-  assert.deepEqual(pack.ruleIds, []);
-  assert.match(pack.text, /No high-confidence specialized rules matched/);
+  await assert.rejects(() => prepareTask("Implement a small TypeScript feature", fixture.cwd, 800, false), /No active rules found/);
 });
 
 test("selector matches scoped repo rules and includes high-risk examples", async () => {

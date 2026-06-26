@@ -21,7 +21,6 @@ const booleanFlags = new Set([
   "global",
   "force",
   "no-resolve-conflicts",
-  "with-examples",
   "dry-run",
 ]);
 
@@ -43,13 +42,13 @@ export async function runAiRulesCli(argv: string[], cwd = process.cwd()): Promis
   try {
     switch (parsed.command) {
       case "setup":
-        return handleSetup(parsed, cwd);
+        return await handleSetup(parsed, cwd);
       case "run":
-        return handleRun(parsed, cwd);
+        return await handleRun(parsed, cwd);
       case "doctor":
-        return handleDoctor(cwd);
+        return await handleDoctor(cwd);
       case "debug":
-        return handleDebug(parsed, cwd);
+        return await handleDebug(parsed, cwd);
       case "help":
       case "--help":
       case "-h":
@@ -83,7 +82,6 @@ async function handleSetup(parsed: ParsedArgs, cwd: string): Promise<number> {
   const result = await runSetup({
     cwd,
     global: Boolean(parsed.flags.get("global")),
-    withExamples: Boolean(parsed.flags.get("with-examples")),
     force: Boolean(parsed.flags.get("force")),
     tool: readOptionalString(parsed, "tool"),
   });
