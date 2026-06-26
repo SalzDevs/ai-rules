@@ -1,17 +1,13 @@
 import { spawn } from "node:child_process";
 
-export type ToolName = "codex" | "claude" | "opencode" | "pi";
+export type ToolName = "opencode" | "pi";
 
 const defaultCommands: Record<ToolName, string> = {
-  codex: "codex",
-  claude: "claude",
   opencode: "opencode",
   pi: "pi",
 };
 
 const envNames: Record<ToolName, string> = {
-  codex: "AI_RULES_CODEX_CMD",
-  claude: "AI_RULES_CLAUDE_CMD",
   opencode: "AI_RULES_OPENCODE_CMD",
   pi: "AI_RULES_PI_CMD",
 };

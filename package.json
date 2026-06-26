@@ -11,8 +11,6 @@
   ],
   "bin": {
     "ai-rules": "./dist/bin/ai-rules.js",
-    "smart-codex": "./dist/bin/smart-codex.js",
-    "smart-claude": "./dist/bin/smart-claude.js",
     "smart-opencode": "./dist/bin/smart-opencode.js",
     "smart-pi": "./dist/bin/smart-pi.js"
   },
@@ -37,8 +35,7 @@
     "rules",
     "prompt",
     "opencode",
-    "claude",
-    "codex"
+    "pi"
   ],
   "license": "MIT",
   "dependencies": {

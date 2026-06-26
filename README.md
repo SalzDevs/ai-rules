@@ -94,8 +94,6 @@ Legacy wrappers still work:
 
 ```sh
 smart-opencode "task"
-smart-claude "task"
-smart-codex "task"
 smart-pi "task"
 ```
 

@@ -5,20 +5,16 @@ import type { ToolName } from "./tool-adapters.js";
 const execFileAsync = promisify(execFile);
 
 const defaultCommands: Record<ToolName, string> = {
-  codex: "codex",
-  claude: "claude",
   opencode: "opencode",
   pi: "pi",
 };
 
 const envNames: Record<ToolName, string> = {
-  codex: "AI_RULES_CODEX_CMD",
-  claude: "AI_RULES_CLAUDE_CMD",
   opencode: "AI_RULES_OPENCODE_CMD",
   pi: "AI_RULES_PI_CMD",
 };
 
-const toolPriority: ToolName[] = ["opencode", "claude", "codex", "pi"];
+const toolPriority: ToolName[] = ["opencode", "pi"];
 
 export function resolveToolCommand(tool: ToolName): string {
   return process.env[envNames[tool]] ?? defaultCommands[tool];
@@ -72,7 +68,7 @@ export async function resolveTool(explicit?: string): Promise<ToolName> {
 
   const available = await detectAvailableTools();
   if (available.length === 0) {
-    throw new Error("No supported coding tool found. Install opencode, claude, codex, or pi.");
+    throw new Error("No supported coding tool found. Install opencode or pi.");
   }
 
   return available[0];
