@@ -1,39 +1,66 @@
 # ai-rules
 
-`ai-rules` is a local-first instruction layer for AI coding agents. It stores reusable coding rules outside the model context, selects only the rules relevant to one task, and launches supported tools with a compact rule contract.
+**You rule your AI — not the other way around.**
+
+Coding agents come with hidden defaults: generic style, one-size-fits-all patterns, instructions you never wrote and can't reuse. `ai-rules` puts you back in charge. Your standards live locally, outside the model context. You define them once, select only what fits each task, and the agent runs under a compact rule contract — not whatever the model felt like that day.
+
+- **Your rules, your machine** — personal Markdown in `~/.config/ai-rules/rules/`
+- **Task-scoped** — only relevant rules enter the prompt
+- **Harness-native** — create rules with `/create-rule`, run tasks with `/airules` in Pi or OpenCode
+
+> Early beta. Personal rules for [Pi](https://github.com/earendil-works/pi) and [OpenCode](https://opencode.ai) today.
 
 ## Quick start
 
-No install required:
+**1. Setup**
 
 ```sh
 cd your-project
 npx ai-rules setup
+```
+
+**2. Create your first rule** (in Pi or OpenCode)
+
+```sh
+/create-rule
+/create-rule no fetch directly inside React components
+```
+
+**3. Run a task**
+
+In Pi or OpenCode:
+
+```sh
+/airules Implement data loading in src/components/UserCard.tsx
+```
+
+Or from the CLI (after you have at least one rule):
+
+```sh
 npx ai-rules run "Implement data loading in src/components/UserCard.tsx"
 ```
 
-Or install globally once:
+Install globally once if you prefer:
 
 ```sh
 npm install -g ai-rules
 ai-rules setup
-ai-rules run "Implement data loading in src/components/UserCard.tsx"
 ```
 
-Or in OpenCode:
-
-```sh
-npx ai-rules setup
-opencode
-/create-rule
-/airules Implement data loading in src/components/UserCard.tsx
-```
-
-Or in Pi:
+### Pi
 
 ```sh
 npx ai-rules setup
 pi
+/create-rule
+/airules Implement data loading in src/components/UserCard.tsx
+```
+
+### OpenCode
+
+```sh
+npx ai-rules setup
+opencode
 /create-rule
 /airules Implement data loading in src/components/UserCard.tsx
 ```
@@ -68,14 +95,7 @@ ai-rules setup --global
 ai-rules setup --force
 ```
 
-Create your first rule in Pi or OpenCode:
-
-```sh
-/create-rule
-/create-rule no fetch directly inside React components
-```
-
-Then run tasks with `/airules` or `ai-rules run "your task"`.
+Create your first rule in Pi or OpenCode (step 2 above), then run tasks with `/airules` or `ai-rules run "your task"`.
 
 ## Advanced / debug
 
