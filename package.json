@@ -38,6 +38,9 @@
     "pi"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "minimatch": "^10.0.3",
     "yaml": "^2.8.1"
