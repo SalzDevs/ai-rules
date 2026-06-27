@@ -29,7 +29,7 @@ Define standards once → select what fits each task → run the agent under a c
 ## Quickstart
 
 ```bash
-npx ai-rules setup
+npx @therealsalzdevs/ai-rules setup
 ```
 
 In Pi or OpenCode:
@@ -50,7 +50,7 @@ ai-rules doctor
 <summary><strong>Install globally</strong></summary>
 
 ```bash
-npm install -g ai-rules
+npm install -g @therealsalzdevs/ai-rules
 ai-rules setup              # repo-local integrations
 ai-rules setup --global     # user-wide integrations
 ai-rules setup --force      # overwrite existing integration files

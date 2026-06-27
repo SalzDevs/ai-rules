@@ -1,6 +1,6 @@
 {
-  "name": "ai-rules",
-  "version": "0.2.0",
+  "name": "@therealsalzdevs/ai-rules",
+  "version": "0.2.1",
   "description": "Local-first, tool-agnostic AI coding instruction selector and wrapper.",
   "type": "module",
   "main": "./dist/bin/ai-rules.js",
